@@ -2,7 +2,7 @@
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getFirestore } from 'firebase/firestore';
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, User, updateProfile, sendEmailVerification } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, signOut, User, updateProfile, sendEmailVerification, setPersistence, browserLocalPersistence } from 'firebase/auth';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 // Sign in with email and password
@@ -63,16 +63,41 @@ try {
   // ignore analytics init errors in unsupported environments
 }
 const auth = getAuth(app);
+// Keep the session so returning users won't be asked to re-enter credentials in most cases
+setPersistence(auth, browserLocalPersistence).catch(() => {});
 const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
-provider.setCustomParameters({ prompt: 'select_account' });
+// Do not force account chooser; let Google auto-pick the active account if possible
+provider.setCustomParameters({});
 
 export const signInWithGoogle = async (): Promise<User | null> => {
   try {
+    // Provide login_hint to allow auto-selection if browser knows the account
+    try {
+      const hint = localStorage.getItem('studytracker:last_google_email');
+      if (hint) provider.setCustomParameters({ login_hint: hint });
+    } catch {}
     const result = await signInWithPopup(auth, provider);
+    try { localStorage.setItem('studytracker:last_google_email', result.user.email || ''); } catch {}
     return result.user;
-  } catch (error) {
-    console.error('Google sign-in error:', error);
+  } catch (error: any) {
+    const code: string | undefined = error?.code;
+    const host = typeof window !== 'undefined' ? window.location.hostname : '';
+    if (code === 'auth/unauthorized-domain') {
+      // Provide a clear hint for configuration
+      console.error(`Google sign-in blocked: unauthorized domain. Add "${host}" in Firebase Console → Authentication → Settings → Authorized domains.`);
+      if (typeof window !== 'undefined') {
+        alert(`Google sign-in blocked for domain: ${host}.\n\nFix: Firebase Console → Authentication → Settings → Authorized domains → Add "${host}".`);
+      }
+      // Fallback to redirect can still be blocked by unauthorized domains, but helps with popup blockers otherwise
+      try { await signInWithRedirect(auth, provider); } catch {}
+    } else {
+      // On production (non-localhost), popup blockers can interfere—try redirect once
+      const isLocal = host === 'localhost' || host === '127.0.0.1';
+      if (!isLocal) {
+        try { await signInWithRedirect(auth, provider); } catch {}
+      }
+    }
     return null;
   }
 };

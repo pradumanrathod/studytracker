@@ -50,7 +50,18 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+// Guard analytics: only initialize in browser and when safe (reduces console noise in dev)
+let analytics: ReturnType<typeof getAnalytics> | undefined;
+try {
+  if (typeof window !== 'undefined') {
+    const isHttps = window.location.protocol === 'https:' || window.location.hostname === 'localhost';
+    if (isHttps && firebaseConfig.measurementId) {
+      analytics = getAnalytics(app);
+    }
+  }
+} catch {
+  // ignore analytics init errors in unsupported environments
+}
 const auth = getAuth(app);
 const db = getFirestore(app);
 const provider = new GoogleAuthProvider();

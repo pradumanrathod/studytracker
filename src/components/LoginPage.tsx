@@ -138,30 +138,30 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-yellow-100 via-orange-100 to-indigo-200 dark:from-gray-900 dark:to-gray-800">
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-8 max-w-md w-full flex flex-col items-center border border-gray-200 dark:border-gray-800">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-950 via-gray-900 to-purple-950">
+      <div className="bg-gray-900/80 rounded-2xl shadow-2xl p-8 max-w-md w-full flex flex-col items-center border border-gray-700">
         <div className="flex flex-col items-center mb-6">
           <img
             src="/models/logo.png"
             alt="StudyTracker"
             className="h-20 md:h-24 w-auto mb-3 rounded-lg shadow ring-1 ring-black/5"
           />
-          <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight mb-1">
+          <h2 className="text-3xl font-extrabold text-white tracking-tight mb-1">
             {isRegister ? 'Create your account' : 'Welcome back!'}
           </h2>
-          <p className="text-gray-500 dark:text-gray-300 text-center text-sm">
+          <p className="text-gray-300 text-center text-sm">
             {isRegister ? 'Register to start tracking your study sessions.' : 'Sign in to continue to StudyTracker.'}
           </p>
         </div>
         {/* Emphasize Google sign-in */}
         <div className="w-full mb-3">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Quick Sign-in</span>
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300">Recommended</span>
+            <span className="text-xs uppercase tracking-wide text-gray-400">Quick Sign-in</span>
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-green-900/40 text-green-300">Recommended</span>
           </div>
           <button
             onClick={handleGoogleSignIn}
-            className="flex items-center justify-center w-full px-6 py-2 bg-white border border-gray-300 dark:bg-gray-800 dark:border-gray-700 text-gray-700 dark:text-gray-200 rounded-lg font-medium text-lg shadow transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
+            className="flex items-center justify-center w-full px-6 py-2 bg-gray-800 border border-gray-700 text-gray-200 rounded-lg font-medium text-lg shadow transition-colors hover:bg-gray-700"
             disabled={loading}
             type="button"
           >
@@ -170,12 +170,12 @@ const LoginPage: React.FC = () => {
           </button>
         </div>
         {/* Divider OR between social and email/password */}
-        <div className="my-4 flex items-center text-xs text-gray-500 dark:text-gray-400">
-          <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
+        <div className="my-4 flex items-center text-xs text-gray-400">
+          <div className="flex-1 h-px bg-gray-700" />
           <div className="mx-3 flex flex-col items-center">
             <span className="px-2">or</span>
           </div>
-          <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
+          <div className="flex-1 h-px bg-gray-700" />
         </div>
 
         <form className="w-full space-y-4" onSubmit={handleEmailAuth}>
@@ -185,7 +185,7 @@ const LoginPage: React.FC = () => {
               placeholder="Username"
               value={username}
               onChange={e => setUsername(e.target.value)}
-              className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full px-4 py-2 rounded-lg border border-gray-700 bg-gray-800 text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               required
             />
           )}
@@ -194,7 +194,7 @@ const LoginPage: React.FC = () => {
             placeholder="Email"
             value={email}
             onChange={e => setEmail(e.target.value)}
-            className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="w-full px-4 py-2 rounded-lg border border-gray-700 bg-gray-800 text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             required
           />
           <div className="relative">
@@ -203,13 +203,13 @@ const LoginPage: React.FC = () => {
               placeholder="Password"
               value={password}
               onChange={e => { setPassword(e.target.value); if (isRegister) evalPassword(e.target.value); }}
-              className="w-full pr-10 px-4 py-2 rounded-lg border border-gray-300 dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full pr-10 px-4 py-2 rounded-lg border border-gray-700 bg-gray-800 text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               required
             />
             <button
               type="button"
               onClick={() => setShowPassword(v => !v)}
-              className="absolute inset-y-0 right-2 flex items-center text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              className="absolute inset-y-0 right-2 flex items-center text-gray-400 hover:text-gray-200"
               aria-label={showPassword ? 'Hide password' : 'Show password'}
               title={showPassword ? 'Hide password' : 'Show password'}
             >
@@ -218,23 +218,23 @@ const LoginPage: React.FC = () => {
           </div>
           {isRegister && (
             <div className="mt-1">
-              <div className="w-full h-2 rounded bg-gray-200 dark:bg-gray-700 overflow-hidden">
+              <div className="w-full h-2 rounded bg-gray-700 overflow-hidden">
                 <div
                   className={`h-full ${pwdScore <= 1 ? 'bg-red-500' : pwdScore === 2 ? 'bg-yellow-500' : pwdScore === 3 ? 'bg-green-500' : 'bg-emerald-600'}`}
                   style={{ width: `${Math.max(10, pwdScore * 25)}%` }}
                 />
               </div>
-              <div className="text-xs mt-1 text-gray-500 dark:text-gray-400">{pwdHelper}</div>
+              <div className="text-xs mt-1 text-gray-400">{pwdHelper}</div>
             </div>
           )}
           {isRegister && (
-            <p className="text-xs text-gray-500 dark:text-gray-400">Create a new password for StudyTracker.</p>
+            <p className="text-xs text-gray-400">Create a new password for StudyTracker.</p>
           )}
           {!isRegister && (
             <div className="flex justify-end -mt-2 mb-1">
               <button
                 type="button"
-                className="text-xs text-primary-600 hover:underline dark:text-primary-400"
+                className="text-xs text-primary-400 hover:underline"
                 onClick={handleForgotPassword}
                 disabled={loading}
               >
@@ -242,16 +242,16 @@ const LoginPage: React.FC = () => {
               </button>
             </div>
           )}
-          {error && <div className="text-red-500 text-sm text-center">{error}</div>}
+          {error && <div className="text-red-400 text-sm text-center">{error}</div>}
           {info && (
-            <div className="text-green-600 text-sm text-center">
+            <div className="text-green-300 text-sm text-center">
               {info}
               {!isRegister && (
                 <div className="mt-2">
                   <button
                     type="button"
                     onClick={handleResendVerification}
-                    className="text-xs text-primary-600 hover:underline dark:text-primary-400"
+                    className="text-xs text-primary-400 hover:underline"
                     disabled={loading}
                   >
                     Resend verification email
@@ -269,7 +269,7 @@ const LoginPage: React.FC = () => {
           </button>
         </form>
         <button
-          className="mt-4 text-primary-600 dark:text-primary-400 hover:underline text-sm"
+          className="mt-4 text-primary-400 hover:underline text-sm"
           onClick={() => setIsRegister(!isRegister)}
           disabled={loading}
         >

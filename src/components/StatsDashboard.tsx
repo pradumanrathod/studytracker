@@ -20,7 +20,7 @@ interface StatsDashboardProps {
 }
 
 const StatsDashboard: React.FC<StatsDashboardProps> = ({ stats, user, isLoading }) => {
-  const isDarkMode = document.documentElement.classList.contains('dark');
+  const isDarkMode = true; // Dark-only UI
   const formatDuration = (seconds: number): string => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
@@ -114,11 +114,11 @@ const StatsDashboard: React.FC<StatsDashboardProps> = ({ stats, user, isLoading 
   // If user is not logged in, prompt to login instead of showing stats
   if (!user) {
     return (
-      <div className={`flex items-center justify-center min-h-[300px] rounded-lg border ${isDarkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-white'}`}>
+      <div className={`flex items-center justify-center min-h-[300px] rounded-lg border bg-gray-900/60 border-gray-700 backdrop-blur`}>
         <div className="text-center p-6">
-          <BarChart3 className={`w-10 h-10 mx-auto mb-3 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`} />
-          <h3 className={`text-lg font-semibold mb-1 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Login to see stats</h3>
-          <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Sign in to sync and view your progress, streaks, and detailed analytics.</p>
+          <BarChart3 className={`text-gray-400 w-10 h-10 mx-auto mb-3`} />
+          <h3 className={`text-white text-lg font-semibold mb-1`}>Login to see stats</h3>
+          <p className={`text-gray-400`}>Sign in to sync and view your progress, streaks, and detailed analytics.</p>
         </div>
       </div>
     );
@@ -129,23 +129,23 @@ const StatsDashboard: React.FC<StatsDashboardProps> = ({ stats, user, isLoading 
     return (
       <div className="space-y-6 animate-pulse">
         {/* Productivity score skeleton */}
-        <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-gray-100'} rounded-lg p-4 sm:p-6`}>
+        <div className={`rounded-lg p-4 sm:p-6 bg-gray-900/60 border border-gray-700`}>
           <div className="flex items-center justify-between">
-            <div className={`h-5 w-40 rounded ${isDarkMode ? 'bg-gray-700' : 'bg-gray-300'}`}></div>
-            <div className={`h-8 w-16 rounded ${isDarkMode ? 'bg-gray-700' : 'bg-gray-300'}`}></div>
+            <div className={`h-5 w-40 rounded bg-gray-700`}></div>
+            <div className={`h-8 w-16 rounded bg-gray-700`}></div>
           </div>
-          <div className={`mt-4 h-2 w-full rounded-full ${isDarkMode ? 'bg-gray-700' : 'bg-gray-300'}`}></div>
+          <div className={`mt-4 h-2 w-full rounded-full bg-gray-700`}></div>
         </div>
 
         {/* Quick stats grid skeleton */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-6">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className={`${isDarkMode ? 'bg-gray-800' : 'bg-gray-100'} rounded-lg p-4`}>
+            <div key={i} className={`rounded-lg p-4 bg-gray-900/60 border border-gray-700 backdrop-blur`}>
               <div className="flex items-center space-x-3">
-                <div className={`h-6 w-6 rounded ${isDarkMode ? 'bg-gray-700' : 'bg-gray-300'}`}></div>
+                <div className={`h-6 w-6 rounded bg-gray-700`}></div>
                 <div className="flex-1 space-y-2">
-                  <div className={`h-3 w-24 rounded ${isDarkMode ? 'bg-gray-700' : 'bg-gray-300'}`}></div>
-                  <div className={`h-4 w-20 rounded ${isDarkMode ? 'bg-gray-700' : 'bg-gray-300'}`}></div>
+                  <div className={`h-3 w-24 rounded bg-gray-700`}></div>
+                  <div className={`h-4 w-20 rounded bg-gray-700`}></div>
                 </div>
               </div>
             </div>
@@ -154,11 +154,11 @@ const StatsDashboard: React.FC<StatsDashboardProps> = ({ stats, user, isLoading 
 
         {/* Detailed stats skeleton */}
         <div className="space-y-4">
-          <div className={`h-5 w-40 rounded ${isDarkMode ? 'bg-gray-700' : 'bg-gray-300'}`}></div>
+          <div className={`h-5 w-40 rounded bg-gray-700`}></div>
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="flex justify-between items-center py-3 border-b border-transparent">
-              <div className={`h-4 w-48 rounded ${isDarkMode ? 'bg-gray-700' : 'bg-gray-300'}`}></div>
-              <div className={`h-5 w-20 rounded ${isDarkMode ? 'bg-gray-700' : 'bg-gray-300'}`}></div>
+              <div className={`h-4 w-48 rounded bg-gray-700`}></div>
+              <div className={`h-5 w-20 rounded bg-gray-700`}></div>
             </div>
           ))}
         </div>
@@ -169,33 +169,36 @@ const StatsDashboard: React.FC<StatsDashboardProps> = ({ stats, user, isLoading 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className={`text-lg font-semibold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Your Progress</h2>
+        <h2 className={`text-lg font-semibold mb-4 text-white`}>Your Progress</h2>
         
-                 {/* Productivity Score */}
-         <div className="bg-gradient-to-r from-primary-500 to-purple-600 rounded-lg p-4 sm:p-6 text-white mb-6">
-           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
-             <div>
-               <h3 className="text-lg font-semibold">Productivity Score</h3>
-               <p className="text-primary-100 text-sm">Based on your focus patterns</p>
-             </div>
-             <div className="text-center sm:text-right">
-               <div className="text-2xl sm:text-3xl font-bold">{productivityScore}%</div>
-               <div className="text-primary-100 text-sm">
-                 {productivityScore >= 80 ? 'Excellent!' : 
-                  productivityScore >= 60 ? 'Good!' : 
-                  productivityScore >= 40 ? 'Keep going!' : 'Getting started!'}
-               </div>
-             </div>
-           </div>
-          
-          {/* Progress Bar */}
-          <div className="mt-4 bg-white bg-opacity-20 rounded-full h-2">
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${Math.min(productivityScore, 100)}%` }}
-              transition={{ duration: 1, ease: "easeOut" }}
-              className="bg-white h-2 rounded-full"
-            />
+        {/* Productivity Score */}
+        <div className="relative overflow-hidden rounded-lg p-4 sm:p-6 mb-6 border border-gray-700 bg-gradient-to-br from-primary-600/30 via-purple-600/20 to-transparent">
+          <div className="pointer-events-none absolute inset-0 opacity-30" style={{background: 'radial-gradient(800px 200px at 0% 0%, rgba(99,102,241,0.25), transparent 60%)'}} />
+          <div className="relative text-white">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
+              <div>
+                <h3 className="text-lg font-semibold">Productivity Score</h3>
+                <p className="text-primary-100/80 text-sm">Based on your focus patterns</p>
+              </div>
+              <div className="text-center sm:text-right">
+                <div className="text-2xl sm:text-3xl font-bold">{productivityScore}%</div>
+                <div className="text-primary-100/80 text-sm">
+                  {productivityScore >= 80 ? 'Excellent!' : 
+                   productivityScore >= 60 ? 'Good!' : 
+                   productivityScore >= 40 ? 'Keep going!' : 'Getting started!'}
+                </div>
+              </div>
+            </div>
+
+            {/* Progress Bar */}
+            <div className="mt-4 bg-white/20 rounded-full h-2">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${Math.min(productivityScore, 100)}%` }}
+                transition={{ duration: 1, ease: 'easeOut' }}
+                className="bg-white h-2 rounded-full"
+              />
+            </div>
           </div>
         </div>
 
@@ -209,13 +212,15 @@ const StatsDashboard: React.FC<StatsDashboardProps> = ({ stats, user, isLoading 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className={`${stat.bgColor} rounded-lg p-4`}
+                className={`rounded-lg p-4 bg-gray-900/60 border border-gray-700 backdrop-blur`}
               >
                 <div className="flex items-center space-x-3">
-                  <Icon className={`h-6 w-6 ${stat.color}`} />
+                  <div className="h-10 w-10 rounded-lg bg-gray-800 border border-gray-700 flex items-center justify-center">
+                    <Icon className={`h-5 w-5 ${stat.color.replace('text-', 'text-')}`} />
+                  </div>
                   <div>
-                    <div className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>{stat.title}</div>
-                    <div className={`text-lg font-semibold ${stat.color}`}>
+                    <div className={`text-sm text-gray-300`}>{stat.title}</div>
+                    <div className={`text-lg font-semibold ${stat.color.replace('text-', 'text-')}`}>
                       {stat.value}
                     </div>
                   </div>
@@ -227,20 +232,20 @@ const StatsDashboard: React.FC<StatsDashboardProps> = ({ stats, user, isLoading 
 
         {/* Detailed Stats */}
         <div className="space-y-4">
-          <h3 className={`text-md font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Detailed Statistics</h3>
+          <h3 className={`text-md font-semibold text-white`}>Detailed Statistics</h3>
           {detailStats.map((stat, index) => (
             <motion.div
               key={stat.label}
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.1 }}
-              className="flex justify-between items-center py-3 border-b border-gray-100 last:border-b-0"
+              className="flex justify-between items-center py-3 border-b border-gray-700 last:border-b-0"
             >
               <div>
-                <div className={`font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{stat.label}</div>
-                <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>{stat.description}</div>
+                <div className={`font-medium text-white`}>{stat.label}</div>
+                <div className={`text-sm text-gray-400`}>{stat.description}</div>
               </div>
-              <div className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+              <div className={`text-lg font-semibold text-white`}>
                 {stat.value}
               </div>
             </motion.div>
@@ -248,17 +253,9 @@ const StatsDashboard: React.FC<StatsDashboardProps> = ({ stats, user, isLoading 
         </div>
 
                  {/* Insights */}
-         <div className={`mt-6 rounded-lg p-3 sm:p-4 ${
-           isDarkMode 
-             ? 'bg-blue-900/20 border border-blue-700' 
-             : 'bg-blue-50'
-         }`}>
-           <h3 className={`text-md font-semibold mb-2 ${
-             isDarkMode ? 'text-blue-200' : 'text-blue-900'
-           }`}>Insights</h3>
-           <div className={`space-y-2 text-xs sm:text-sm ${
-             isDarkMode ? 'text-blue-200' : 'text-blue-800'
-           }`}>
+         <div className={`mt-6 rounded-lg p-3 sm:p-4 bg-blue-900/20 border border-blue-700`}>
+          <h3 className={`text-md font-semibold mb-2 text-blue-200`}>Insights</h3>
+          <div className={`space-y-2 text-xs sm:text-sm text-blue-200`}>
             {stats.currentStreak > 0 && (
               <div className="flex items-center space-x-2">
                 <TrendingUp className="h-4 w-4" />

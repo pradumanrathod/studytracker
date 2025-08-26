@@ -27,6 +27,11 @@ import SessionGraph from './components/SessionGraph';
 import WebcamView from './components/WebcamView';
 import SettingsPanel from './components/SettingsPanel';
 import MilestonesPanel from './components/MilestonesPanel';
+import Footer from './components/Footer';
+import FAQ from './components/FAQ';
+import Reviews from './components/Reviews';
+import WaterTankTimer from './components/WaterTankTimer';
+import StreakHeatmap from './components/StreakHeatmap';
 import { useNavigate } from 'react-router-dom';
 
 
@@ -145,7 +150,8 @@ function App() {
   const [webcamError, setWebcamError] = useState<string | null>(null);
   const [webcamStarting, setWebcamStarting] = useState(false);
   const [showAwayAlert, setShowAwayAlert] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(true);
+  // Dark mode only
+  const [isDarkMode] = useState<boolean>(true);
   const [sessionActive, setSessionActive] = useState(false); // true after Start is clicked, false after End
   const [manuallyPaused, setManuallyPaused] = useState(false); // Track if user manually paused
   // Track if stats have been loaded from Firestore or local cache to avoid overwriting with zeros
@@ -153,6 +159,13 @@ function App() {
 
   const videoRef = useRef<HTMLVideoElement>(null);
   // canvasRef not needed for COCO-SSD
+
+  // Ensure restricted tabs are not active for guests
+  useEffect(() => {
+    if (!user && (activeTab === 'milestones' || activeTab === 'settings')) {
+      setActiveTab('stats');
+    }
+  }, [user, activeTab]);
 
   useEffect(() => {
     // Set up timer service callbacks
@@ -359,6 +372,12 @@ function App() {
     setSessionActive(false); // Mark session as inactive
     setManuallyPaused(false); // Reset manual pause flag
     setShowAwayAlert(false);
+    // Auto-stop webcam and detection on session end
+    try {
+      personDetectionService.stopDetection();
+    } catch {}
+    setWebcamEnabled(false);
+    setPersonPresent(false);
   };
 
   const handleToggleWebcam = async () => {
@@ -389,15 +408,13 @@ function App() {
 
 
 
-  const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
-    document.documentElement.classList.toggle('dark', !isDarkMode);
-  };
+  // no-op: theme locked to dark
 
 
 
+  // Force dark class on mount
   useEffect(() => {
-    // Initialize dark mode
+    try { localStorage.setItem('studytracker:theme', 'dark'); } catch {}
     document.documentElement.classList.add('dark');
   }, []);
 
@@ -414,17 +431,9 @@ function App() {
   };
 
     return (
-    <div className={`min-h-screen transition-colors duration-300 ${
-      isDarkMode 
-        ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900' 
-        : 'bg-gradient-to-br from-blue-50 to-indigo-100'
-    }`}>
+    <div className={`min-h-screen transition-colors duration-300 bg-gradient-to-br from-indigo-950 via-gray-900 to-purple-950`}>
       {/* Header */}
-      <header className={`sticky top-0 z-50 transition-colors duration-300 backdrop-blur supports-[backdrop-filter]:backdrop-blur ${
-        isDarkMode 
-          ? 'bg-gray-900/70 border-b border-gray-800' 
-          : 'bg-white/70 border-b border-gray-200'
-      }`}>
+      <header className={`sticky top-0 z-50 transition-colors duration-300 backdrop-blur supports-[backdrop-filter]:backdrop-blur bg-gray-900/70 border-b border-gray-800`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Left: Brand */}
@@ -438,15 +447,13 @@ function App() {
             {/* Center: (nav removed as requested) */}
 
             {/* Right: Controls */}
-            <div className="flex items-center gap-2 sm:gap-3">
+            <div className="flex items-center gap-3 sm:gap-4">
               <button
                 onClick={handleToggleWebcam}
                 className={`flex items-center gap-2 px-2 sm:px-3 py-2 rounded-lg transition-colors ${
                   webcamEnabled 
-                    ? 'bg-green-100 text-green-700 hover:bg-green-200' 
-                    : isDarkMode
-                      ? 'bg-gray-800 text-gray-200 hover:bg-gray-700'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    ? 'bg-green-900/40 text-green-200 hover:bg-green-900/50' 
+                    : 'bg-gray-800 text-gray-200 hover:bg-gray-700'
                 }`}
                 title={webcamEnabled ? 'Webcam On' : 'Webcam Off'}
               >
@@ -456,17 +463,7 @@ function App() {
                 </span>
               </button>
 
-              <button
-                onClick={toggleDarkMode}
-                className={`p-2 rounded-lg transition-colors ${
-                  isDarkMode
-                    ? 'bg-gray-800 text-gray-200 hover:bg-gray-700'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-                title={isDarkMode ? 'Light mode' : 'Dark mode'}
-              >
-                {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-              </button>
+              {/* Theme toggle removed: dark mode only */}
 
               {/* User sign-in icon */}
               <div className="ml-1">
@@ -488,23 +485,30 @@ function App() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-10 py-12 lg:py-16">
         {/* Welcome Section */}
-        <div className="mb-8">
+        <div className="mb-10">
           <motion.div 
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            className="relative overflow-hidden rounded-2xl"
+            className="relative overflow-hidden rounded-3xl border border-white/10 shadow-2xl ring-1 ring-black/40"
           >
             {/* Animated Background */}
-            <div className={`absolute inset-0 bg-gradient-to-br ${
+            <div className={`absolute inset-0 ${
               isDarkMode 
-                ? 'from-purple-600 via-blue-600 to-indigo-700' 
-                : 'from-pink-400 via-purple-500 to-indigo-500'
-            } opacity-90`}>
-              <div className="absolute inset-0 bg-black/10"></div>
-              {/* Floating Elements */}
+                ? 'bg-gradient-to-br from-indigo-900 via-purple-900 to-fuchsia-900' 
+                : 'bg-gradient-to-br from-pink-300 via-purple-400 to-indigo-500'
+            }`}>
+              {/* Aurora/spotlights */}
+              <div className="absolute -top-24 -left-16 w-72 h-72 bg-fuchsia-500/25 blur-[80px] rounded-full"></div>
+              <div className="absolute -bottom-20 -right-16 w-80 h-80 bg-sky-500/25 blur-[90px] rounded-full"></div>
+              <div className="absolute top-1/3 left-1/3 w-64 h-64 bg-emerald-400/10 blur-[70px] rounded-full"></div>
+              {/* Subtle grid */}
+              <div className="absolute inset-0 opacity-20 [mask-image:linear-gradient(to_bottom,white,transparent)] pointer-events-none bg-[linear-gradient(to_right,rgba(255,255,255,0.15)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.15)_1px,transparent_1px)] bg-[size:22px_22px]"></div>
+              {/* Noise overlay */}
+              <div className="absolute inset-0 opacity-[0.08] mix-blend-overlay pointer-events-none" style={{ backgroundImage: 'url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><filter id=\'n\'><feTurbulence type=\'fractalNoise\' baseFrequency=\'0.8\' numOctaves=\'2\' stitchTiles=\'stitch\'/></filter><rect width=\'100%\' height=\'100%\' filter=\'url(%23n)\' opacity=\'0.6\'/></svg>\')' }}></div>
+              {/* Floating sparkles */}
               <div className="absolute top-4 left-4 w-2 h-2 bg-white/30 rounded-full animate-pulse"></div>
               <div className="absolute top-8 right-8 w-3 h-3 bg-white/20 rounded-full animate-bounce-slow"></div>
               <div className="absolute bottom-6 left-8 w-1 h-1 bg-white/40 rounded-full animate-pulse-slow"></div>
@@ -512,20 +516,22 @@ function App() {
             </div>
             
             {/* Content */}
-            <div className="relative p-8 md:p-12 text-center space-y-6">
+            <div className="relative p-8 md:p-14 text-center space-y-7">
               {/* Main Title */}
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.2, duration: 0.6 }}
               >
-                <h2 className="text-4xl md:text-6xl font-black text-white mb-2 tracking-tight">
+                <h2 className="text-4xl md:text-6xl font-black text-white mb-3 tracking-tight drop-shadow-[0_4px_20px_rgba(0,0,0,0.45)]">
                   Welcome to{' '}
-                  <span className="bg-gradient-to-r from-yellow-300 to-orange-400 bg-clip-text text-transparent">
+                  <span className="relative inline-block bg-gradient-to-r from-yellow-300 via-orange-400 to-pink-400 bg-clip-text text-transparent">
                     StudyTracker
+                    {/* underline glow */}
+                    <span className="absolute -bottom-1 left-0 right-0 h-[6px] bg-gradient-to-r from-yellow-300/50 via-orange-400/50 to-pink-400/50 blur rounded-full"></span>
                   </span>
                 </h2>
-                <div className="w-24 h-1 bg-gradient-to-r from-yellow-300 to-orange-400 mx-auto rounded-full"></div>
+                <div className="w-28 h-1.5 bg-gradient-to-r from-yellow-300 via-orange-400 to-pink-400 mx-auto rounded-full shadow-[0_0_20px_rgba(251,191,36,0.6)]"></div>
               </motion.div>
               
               {/* Subtitle - concise on mobile, detailed on desktop */}
@@ -550,7 +556,26 @@ function App() {
                 Stay focused, build discipline, and achieve your goals with intelligent monitoring and motivation.
               </motion.p>
               
-                             {/* Action Buttons */}
+              {/* Action Buttons */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.55, duration: 0.45 }}
+                className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 pt-2"
+              >
+                <button
+                  onClick={handleStartSession}
+                  className="px-6 py-3 rounded-xl text-white font-semibold shadow-lg shadow-orange-500/30 bg-gradient-to-r from-yellow-400 via-orange-500 to-pink-500 hover:from-yellow-300 hover:via-orange-400 hover:to-pink-400 transition-all duration-300"
+                >
+                  Start Focus
+                </button>
+                <a
+                  href="#stats-desktop"
+                  className="px-6 py-3 rounded-xl font-semibold bg-white/10 text-white hover:bg-white/15 border border-white/15 backdrop-blur transition-colors"
+                >
+                  Learn More
+                </a>
+              </motion.div>
 
               
               {/* Feature Highlights */}
@@ -566,22 +591,22 @@ function App() {
       </motion.div>
     )}
   </AnimatePresence>
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.8, duration: 0.6 }}
-                className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-6"
+                className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-10 pt-8"
               >
-                <div className="flex items-center justify-center space-x-2 text-white/80">
-                  <div className="w-2 h-2 bg-yellow-300 rounded-full"></div>
+                <div className="flex items-center justify-center gap-2 text-white/85">
+                  <div className="w-2 h-2 bg-yellow-300 rounded-full shadow-[0_0_12px_rgba(251,191,36,0.7)]"></div>
                   <span className="text-sm font-medium">Smart Face Detection</span>
                 </div>
-                <div className="flex items-center justify-center space-x-2 text-white/80">
-                  <div className="w-2 h-2 bg-orange-300 rounded-full"></div>
+                <div className="flex items-center justify-center gap-2 text-white/85">
+                  <div className="w-2 h-2 bg-orange-300 rounded-full shadow-[0_0_12px_rgba(253,186,116,0.7)]"></div>
                   <span className="text-sm font-medium">Auto Session Tracking</span>
                 </div>
-                <div className="flex items-center justify-center space-x-2 text-white/80">
-                  <div className="w-2 h-2 bg-pink-300 rounded-full"></div>
+                <div className="flex items-center justify-center gap-2 text-white/85">
+                  <div className="w-2 h-2 bg-pink-300 rounded-full shadow-[0_0_12px_rgba(249,168,212,0.7)]"></div>
                   <span className="text-sm font-medium">Progress Analytics</span>
                 </div>
               </motion.div>
@@ -589,12 +614,12 @@ function App() {
           </motion.div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 lg:gap-12 xl:gap-16">
           {/* Webcam + Away Alert (mobile first) */}
           <div className="order-1 lg:order-none lg:col-span-3 space-y-4 sm:space-y-6">
             {/* Webcam View (hidden if off) */}
             <div className={`card${webcamEnabled ? '' : ' hidden'}`}>
-              <h3 className={`text-lg font-semibold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+              <h3 className={`text-lg font-semibold mb-4 text-white`}>
                 Live Monitoring
               </h3>
               <WebcamView
@@ -659,14 +684,18 @@ function App() {
                 onPause={handlePauseSession}
                 onResume={handleResumeSession}
                 onEnd={handleEndSession}
+                isStarting={webcamStarting}
               />
             </div>
             {user ? (
-              <SessionGraph sessions={timerService.getSessions().filter(s => s.duration >= 60)} />
+              <>
+                <SessionGraph sessions={timerService.getSessions().filter(s => s.duration >= 60)} />
+                <StreakHeatmap sessions={timerService.getSessions()} />
+              </>
             ) : (
-              <div className={`mt-4 rounded-lg border p-6 text-center ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
-                <h3 className={`text-lg font-semibold mb-1 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Login to see session history</h3>
-                <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Your session graph is available after signing in.</p>
+              <div className={`mt-4 rounded-lg border p-6 text-center bg-gray-800/80 border-gray-700`}>
+                <h3 className={`text-lg font-semibold mb-1 text-white`}>Login to see session history</h3>
+                <p className={`text-gray-400`}>Your session graph is available after signing in.</p>
               </div>
             )}
           </div>
@@ -674,11 +703,7 @@ function App() {
           {/* Desktop Stats (left, same row as Timer) */}
           <div id="stats-desktop" className="hidden lg:block lg:col-span-2 space-y-6">
             {/* Navigation Tabs */}
-            <div className={`rounded-lg shadow-sm border p-1 transition-colors duration-300 ${
-              isDarkMode 
-                ? 'bg-gray-800 border-gray-700' 
-                : 'bg-white border-gray-200'
-            }`}>
+            <div className={`rounded-lg shadow-sm border p-1 transition-colors duration-300 bg-gray-800/80 border-gray-700`}>
               <div className="flex space-x-1">
                 {[
                   { id: 'stats', label: 'Stats', icon: BarChart3 },
@@ -686,18 +711,25 @@ function App() {
                   { id: 'settings', label: 'Settings', icon: Settings },
                 ].map((tab) => {
                   const Icon = tab.icon;
+                  const disabled = !user && (tab.id === 'milestones' || tab.id === 'settings');
                   return (
                     <button
                       key={tab.id}
-                      onClick={() => setActiveTab(tab.id as any)}
+                      onClick={() => {
+                        if (disabled) {
+                          navigate('/login');
+                          return;
+                        }
+                        setActiveTab(tab.id as any);
+                      }}
+                      aria-disabled={disabled}
+                      disabled={disabled}
                       className={`flex-1 flex items-center justify-center space-x-1 sm:space-x-2 py-2 px-2 sm:px-3 rounded-md text-xs sm:text-sm font-medium transition-colors ${
-                        activeTab === tab.id
-                          ? isDarkMode
+                        disabled
+                          ? 'cursor-not-allowed opacity-50 text-gray-500'
+                          : activeTab === tab.id
                             ? 'bg-primary-600 text-white'
-                            : 'bg-primary-100 text-primary-700'
-                          : isDarkMode
-                            ? 'text-gray-400 hover:text-gray-200 hover:bg-gray-700'
-                            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                            : 'text-gray-400 hover:text-gray-200 hover:bg-gray-700'
                       }`}
                     >
                       <Icon className="h-3 w-3 sm:h-4 sm:w-4" />
@@ -729,7 +761,17 @@ function App() {
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -20 }}
                   >
-                    <MilestonesPanel stats={stats} />
+                    {user ? (
+                      <MilestonesPanel stats={stats} />
+                    ) : (
+                      <div className={`rounded-lg border p-6 text-center bg-gray-800/80 border-gray-700`}>
+                        <h3 className={`text-lg font-semibold mb-1 text-white`}>Login required</h3>
+                        <p className={`text-gray-400`}>Sign in to view and track your milestones.</p>
+                        <div className="mt-4">
+                          <button onClick={() => navigate('/login')} className="px-4 py-2 rounded-md bg-primary-600 text-white">Go to Login</button>
+                        </div>
+                      </div>
+                    )}
                   </motion.div>
                 )}
 
@@ -740,7 +782,17 @@ function App() {
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -20 }}
                   >
-                    <SettingsPanel />
+                    {user ? (
+                      <SettingsPanel />
+                    ) : (
+                      <div className={`rounded-lg border p-6 text-center bg-gray-800/80 border-gray-700`}>
+                        <h3 className={`text-lg font-semibold mb-1 text-white`}>Login required</h3>
+                        <p className={`text-gray-400`}>Sign in to access your settings.</p>
+                        <div className="mt-4">
+                          <button onClick={() => navigate('/login')} className="px-4 py-2 rounded-md bg-primary-600 text-white">Go to Login</button>
+                        </div>
+                      </div>
+                    )}
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -762,18 +814,29 @@ function App() {
                   { id: 'settings', label: 'Settings', icon: Settings },
                 ].map((tab) => {
                   const Icon = tab.icon;
+                  const disabled = !user && (tab.id === 'milestones' || tab.id === 'settings');
                   return (
                     <button
                       key={tab.id}
-                      onClick={() => setActiveTab(tab.id as any)}
+                      onClick={() => {
+                        if (disabled) {
+                          navigate('/login');
+                          return;
+                        }
+                        setActiveTab(tab.id as any);
+                      }}
+                      aria-disabled={disabled}
+                      disabled={disabled}
                       className={`flex-1 flex items-center justify-center space-x-1 sm:space-x-2 py-2 px-2 sm:px-3 rounded-md text-xs sm:text-sm font-medium transition-colors ${
                         activeTab === tab.id
                           ? isDarkMode
                             ? 'bg-primary-600 text-white'
                             : 'bg-primary-100 text-primary-700'
-                          : isDarkMode
-                            ? 'text-gray-400 hover:text-gray-200 hover:bg-gray-700'
-                            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                          : disabled
+                            ? 'cursor-not-allowed opacity-50 text-gray-500'
+                            : isDarkMode
+                              ? 'text-gray-400 hover:text-gray-200 hover:bg-gray-700'
+                              : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
                       }`}
                     >
                       <Icon className="h-3 w-3 sm:h-4 sm:w-4" />
@@ -824,6 +887,20 @@ function App() {
           </div>
         </div>
       </main>
+
+      {/* Water Tank Focus - full width section above Reviews */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-10 pb-12">
+        <div className="card">
+          <WaterTankTimer
+            elapsedSeconds={currentSession?.duration ?? 0}
+            defaultPlannedMinutes={60}
+          />
+        </div>
+      </section>
+
+      <Reviews />
+      <FAQ />
+      <Footer />
     </div>
   );
 }

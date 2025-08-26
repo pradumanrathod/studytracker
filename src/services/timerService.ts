@@ -158,6 +158,52 @@ class TimerService {
     return [...this.sessions];
   }
 
+  // Merge external sessions (e.g., Firestore) with local sessions, deduping by id.
+  // If an incoming session has the same id, prefer the one with a greater duration or with an endTime.
+  mergeSessions(external: StudySession[]): void {
+    const byId = new Map<string, StudySession>();
+    // Seed with current sessions
+    for (const s of this.sessions) {
+      byId.set(s.id, { ...s });
+    }
+    // Merge incoming
+    for (const inc of external) {
+      const existing = byId.get(inc.id);
+      if (!existing) {
+        byId.set(inc.id, { ...inc });
+      } else {
+        // Prefer record that looks more "final"
+        const pickInc = (
+          (inc.endTime && !existing.endTime) ||
+          (inc.duration ?? 0) > (existing.duration ?? 0)
+        );
+        byId.set(inc.id, pickInc ? { ...inc } : existing);
+      }
+    }
+    // Do not overwrite an active currentSession in memory; keep it as-is
+    const activeId = this.currentSession?.id;
+    this.sessions = Array.from(byId.values()).map((s) => ({
+      ...s,
+      // Rehydrate Dates in case callers passed plain objects
+      startTime: new Date(s.startTime),
+      endTime: s.endTime ? new Date(s.endTime) : undefined,
+      breaks: (s.breaks || []).map((b) => ({
+        ...b,
+        startTime: new Date(b.startTime),
+        endTime: b.endTime ? new Date(b.endTime) : undefined,
+      })),
+    }));
+    // Ensure the active session (if any) remains present and consistent
+    if (activeId) {
+      const idx = this.sessions.findIndex((s) => s.id === activeId);
+      if (idx >= 0 && this.currentSession) {
+        this.sessions[idx] = { ...this.currentSession };
+      }
+    }
+    this.saveSessions();
+    this.updateStats();
+  }
+
   getState(): TimerState {
     return this.state;
   }

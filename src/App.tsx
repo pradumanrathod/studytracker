@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { timerService } from './services/timerService';
 import { getUserStats as getUserStatsRemote, setUserStats as setUserStatsRemote } from './services/statsService';
+import { listUserSessions, upsertUserSession } from './services/sessionsService';
 import { signInWithGoogle, signOutUser, auth } from './services/firebaseAuth';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { personDetectionService } from './services/personDetection';
@@ -177,6 +178,25 @@ function App() {
     );
     // Do not call updateStats() here to avoid overwriting loaded stats with zeros
   }, []);
+
+  // Load and merge sessions from Firestore when user logs in
+  useEffect(() => {
+    const syncSessions = async () => {
+      if (!user?.uid) return;
+      try {
+        const remote = await listUserSessions(user.uid);
+        if (remote && remote.length) {
+          timerService.mergeSessions(remote);
+          // ensure UI reflects merged data
+          setCurrentSession(timerService.getCurrentSession());
+          setStats(timerService.getStats());
+        }
+      } catch (e) {
+        console.warn('Failed to load sessions from Firestore:', e);
+      }
+    };
+    syncSessions();
+  }, [user]);
 
   // Warn user before page unload about potential data loss
   useEffect(() => {
@@ -379,8 +399,8 @@ function App() {
     setManuallyPaused(false); // Clear manual pause flag
   };
 
-  const handleEndSession = () => {
-    timerService.endSession();
+  const handleEndSession = async () => {
+    const ended = timerService.endSession();
     setSessionActive(false); // Mark session as inactive
     setManuallyPaused(false); // Reset manual pause flag
     setShowAwayAlert(false);
@@ -390,6 +410,14 @@ function App() {
     } catch {}
     setWebcamEnabled(false);
     setPersonPresent(false);
+    // Persist the ended session to Firestore for cross-device stats/history
+    try {
+      if (user?.uid && ended && ended.duration >= 60) {
+        await upsertUserSession(user.uid, ended);
+      }
+    } catch (e) {
+      console.warn('Failed to save session to Firestore:', e);
+    }
   };
 
   const handleToggleWebcam = async () => {

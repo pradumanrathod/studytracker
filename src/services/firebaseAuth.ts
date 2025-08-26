@@ -72,10 +72,18 @@ provider.setCustomParameters({});
 
 export const signInWithGoogle = async (): Promise<User | null> => {
   try {
-    // Provide login_hint to allow auto-selection if browser knows the account
+    // If user explicitly logged out, force account chooser once
+    let forcedSelect = false;
     try {
-      const hint = localStorage.getItem('studytracker:last_google_email');
-      if (hint) provider.setCustomParameters({ login_hint: hint });
+      forcedSelect = localStorage.getItem('studytracker:force_account_select') === '1';
+      if (forcedSelect) {
+        provider.setCustomParameters({ prompt: 'select_account' });
+        localStorage.removeItem('studytracker:force_account_select');
+      } else {
+        // Provide login_hint to allow auto-selection if browser knows the account
+        const hint = localStorage.getItem('studytracker:last_google_email');
+        if (hint) provider.setCustomParameters({ login_hint: hint });
+      }
     } catch {}
     const result = await signInWithPopup(auth, provider);
     try { localStorage.setItem('studytracker:last_google_email', result.user.email || ''); } catch {}
@@ -105,6 +113,11 @@ export const signInWithGoogle = async (): Promise<User | null> => {
 export const signOutUser = async () => {
   try {
     await signOut(auth);
+    try {
+      // Next sign-in should ask for account to avoid surprising auto-login
+      localStorage.setItem('studytracker:force_account_select', '1');
+      localStorage.removeItem('studytracker:last_google_email');
+    } catch {}
   } catch (error) {
     console.error('Sign out error:', error);
   }

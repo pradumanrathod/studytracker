@@ -156,6 +156,8 @@ function App() {
   const [manuallyPaused, setManuallyPaused] = useState(false); // Track if user manually paused
   // Track if stats have been loaded from Firestore or local cache to avoid overwriting with zeros
   const [statsLoaded, setStatsLoaded] = useState(false);
+  // First-login onboarding flag: when true, hide "Start Focus" and only show "Get Started"
+  const [isFirstLogin, setIsFirstLogin] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   // canvasRef not needed for COCO-SSD
@@ -309,6 +311,8 @@ function App() {
     if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
     // Hide instructions after navigating
     setShowHowTo(false);
+    // Allow Start Focus to be shown after first-time onboarding
+    setIsFirstLogin(false);
     // Mark onboarding as seen for this user/guest
     try {
       const key = onboardingKey(user?.uid);
@@ -324,10 +328,13 @@ function App() {
       const seen = localStorage.getItem(key) === '1';
       if (seen) {
         setShowHowTo(false);
+        setIsFirstLogin(false);
       } else {
         // First time for this user: show once and mark as seen so it won't reappear on refresh/login
         setShowHowTo(true);
         localStorage.setItem(key, '1');
+        // Mark as first login session to hide Start Focus until user clicks Get Started
+        setIsFirstLogin(!!user);
       }
     } catch {
       // If storage is unavailable, default to showing once per session
@@ -350,6 +357,11 @@ function App() {
         }
       }
       setSessionActive(true); // Mark session as active after Start is clicked
+      // Smooth scroll to the timer section after starting
+      setTimeout(() => {
+        const el = document.getElementById('timer-section');
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 50);
     } catch (error) {
       setWebcamError('Failed to start webcam: ' + error);
       console.error('Failed to start webcam:', error);
@@ -563,12 +575,14 @@ function App() {
                 transition={{ delay: 0.55, duration: 0.45 }}
                 className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 pt-2"
               >
-                <button
-                  onClick={handleStartSession}
-                  className="px-6 py-3 rounded-xl text-white font-semibold shadow-lg shadow-orange-500/30 bg-gradient-to-r from-yellow-400 via-orange-500 to-pink-500 hover:from-yellow-300 hover:via-orange-400 hover:to-pink-400 transition-all duration-300"
-                >
-                  Start Focus
-                </button>
+                {!isFirstLogin && (
+                  <button
+                    onClick={handleStartSession}
+                    className="px-6 py-3 rounded-xl text-white font-semibold shadow-lg shadow-orange-500/30 bg-gradient-to-r from-yellow-400 via-orange-500 to-pink-500 hover:from-yellow-300 hover:via-orange-400 hover:to-pink-400 transition-all duration-300"
+                  >
+                    Start Focus
+                  </button>
+                )}
                 <a
                   href="#stats-desktop"
                   className="px-6 py-3 rounded-xl font-semibold bg-white/10 text-white hover:bg-white/15 border border-white/15 backdrop-blur transition-colors"
@@ -676,7 +690,7 @@ function App() {
 
           {/* Timer (desktop: right column) */}
           <div className="order-2 lg:order-none lg:col-span-1 space-y-4 sm:space-y-6">
-            <div className="card">
+            <div id="timer-section" className="card">
               <TimerDisplay
                 timerState={timerState}
                 currentSession={currentSession}
@@ -891,10 +905,20 @@ function App() {
       {/* Water Tank Focus - full width section above Reviews */}
       <section className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-10 pb-12">
         <div className="card">
-          <WaterTankTimer
-            elapsedSeconds={currentSession?.duration ?? 0}
-            defaultPlannedMinutes={60}
-          />
+          {user ? (
+            <WaterTankTimer
+              elapsedSeconds={currentSession?.duration ?? 0}
+              defaultPlannedMinutes={60}
+            />
+          ) : (
+            <div className={`text-center`}>
+              <h3 className={`text-lg font-semibold mb-1 text-white`}>Login to see focus tank</h3>
+              <p className={`text-gray-400`}>Sign in to track and visualize your planned focus.</p>
+              <div className="mt-4">
+                <button onClick={() => navigate('/login')} className="px-4 py-2 rounded-md bg-primary-600 text-white">Go to Login</button>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 

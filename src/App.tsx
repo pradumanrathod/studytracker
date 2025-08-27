@@ -36,50 +36,7 @@ import StreakHeatmap from './components/StreakHeatmap';
 import { useNavigate } from 'react-router-dom';
 
 
-// HowToUse component for onboarding/help
-const HowToUse: React.FC<{ onGetStarted: () => void }> = ({ onGetStarted }) => (
-  <div id="how-to-use" className="max-w-2xl mx-auto mt-10 md:mt-16 p-5 md:p-6 bg-gradient-to-br from-yellow-100 via-orange-100 to-pink-100 dark:from-gray-800 dark:via-gray-900 dark:to-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700 flex flex-col items-center">
-    <h2 className="text-2xl font-extrabold mb-4 text-orange-600 dark:text-yellow-300 flex items-center gap-2">
-      <span role="img" aria-label="sparkles">✨</span> Welcome to StudyTracker! <span role="img" aria-label="books">📚</span>
-    </h2>
-    {/* Mobile-first Get Started button at top */}
-    <button
-      className="md:hidden mb-4 px-6 py-2 bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-white rounded-lg font-semibold text-base transition-all duration-300 shadow-lg shadow-orange-500/30"
-      onClick={onGetStarted}
-    >
-      <span role="img" aria-label="rocket">🚀</span> Get Started
-    </button>
-
-    <ul className="list-none space-y-3 md:space-y-4 text-sm md:text-lg text-gray-800 dark:text-gray-100 mb-6 md:mb-8 w-full">
-      <li className="flex items-center gap-3 bg-white/70 dark:bg-gray-800/70 rounded-lg px-4 py-3 shadow-sm">
-        <span className="text-2xl">⏱️</span>
-        <span><b>Start Focus</b> to begin a session. Timer & webcam will activate!</span>
-      </li>
-      <li className="flex items-center gap-3 bg-white/70 dark:bg-gray-800/70 rounded-lg px-4 py-3 shadow-sm">
-        <span className="text-2xl">👀</span>
-        <span>Stay present in front of your webcam to keep your session active.</span>
-      </li>
-      <li className="flex items-center gap-3 bg-white/70 dark:bg-gray-800/70 rounded-lg px-4 py-3 shadow-sm">
-        <span className="text-2xl">🎯</span>
-        <span>Take breaks as needed—your stats and streaks update automatically.</span>
-      </li>
-      <li className="flex items-center gap-3 bg-white/70 dark:bg-gray-800/70 rounded-lg px-4 py-3 shadow-sm">
-        <span className="text-2xl">📊</span>
-        <span>Check your <b>progress</b>, <b>milestones</b>, and <b>stats</b> below.</span>
-      </li>
-    </ul>
-    <div className="mb-4 md:mb-6 text-sm md:text-base text-gray-500 dark:text-gray-300 text-center">
-      Use StudyTracker daily to build your streak and become a focus pro! <span role="img" aria-label="rocket">🚀</span>
-    </div>
-    {/* Desktop Get Started button at bottom */}
-    <button
-      className="hidden md:inline-flex mt-2 px-8 py-3 bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-white rounded-xl font-semibold text-lg transition-all duration-300 shadow-lg shadow-orange-500/30"
-      onClick={onGetStarted}
-    >
-      <span role="img" aria-label="rocket">🚀</span> Get Started
-    </button>
-  </div>
-);
+// Onboarding component removed per request
 
 
 // UserDropdown component for navbar
@@ -157,8 +114,7 @@ function App() {
   const [manuallyPaused, setManuallyPaused] = useState(false); // Track if user manually paused
   // Track if stats have been loaded from Firestore or local cache to avoid overwriting with zeros
   const [statsLoaded, setStatsLoaded] = useState(false);
-  // First-login onboarding flag: when true, hide "Start Focus" and only show "Get Started"
-  const [isFirstLogin, setIsFirstLogin] = useState(false);
+  // Onboarding removed
 
   const videoRef = useRef<HTMLVideoElement>(null);
   // canvasRef not needed for COCO-SSD
@@ -324,44 +280,9 @@ function App() {
     setStats(timerService.getStats());
   };
 
-  // Control visibility of HowToUse section
-  const [showHowTo, setShowHowTo] = useState(true);
-  const handleGetStarted = () => {
-    const target = document.getElementById('stats-desktop') || document.getElementById('stats-mobile');
-    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    // Hide instructions after navigating
-    setShowHowTo(false);
-    // Allow Start Focus to be shown after first-time onboarding
-    setIsFirstLogin(false);
-    // Mark onboarding as seen for this user/guest
-    try {
-      const key = onboardingKey(user?.uid);
-      localStorage.setItem(key, '1');
-    } catch {}
-  };
+  // Onboarding removed
 
-  // Onboarding (Get Started) visibility: show only once per user/guest
-  const onboardingKey = (uid?: string | null) => `studytracker:onboarding_seen:${uid ?? 'guest'}`;
-  useEffect(() => {
-    try {
-      const key = onboardingKey(user?.uid);
-      const seen = localStorage.getItem(key) === '1';
-      if (seen) {
-        setShowHowTo(false);
-        setIsFirstLogin(false);
-      } else {
-        // First time for this user: show once and mark as seen so it won't reappear on refresh/login
-        setShowHowTo(true);
-        localStorage.setItem(key, '1');
-        // Mark as first login session to hide Start Focus until user clicks Get Started
-        setIsFirstLogin(!!user);
-      }
-    } catch {
-      // If storage is unavailable, default to showing once per session
-      setShowHowTo((prev) => prev);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+  // Onboarding removed
 
   const handleStartSession = async () => {
     try {
@@ -475,11 +396,11 @@ function App() {
       {/* Header */}
       <header className={`sticky top-0 z-50 transition-colors duration-300 backdrop-blur supports-[backdrop-filter]:backdrop-blur bg-gray-900/70 border-b border-gray-800`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex items-center justify-between h-20">
             {/* Left: Brand */}
             <div className="flex items-center gap-3">
-              <img src="/models/logo.png" alt="StudyTracker" className="h-12 w-auto rounded-lg shadow-sm ring-1 ring-black/5" />
-              <span className="hidden sm:inline text-xl font-extrabold tracking-tight bg-gradient-to-r from-yellow-300 to-orange-400 bg-clip-text text-transparent">
+              <img src="/models/logo.png" alt="StudyTracker" className="h-14 sm:h-16 w-auto rounded-lg shadow-sm ring-1 ring-black/5" />
+              <span className="hidden sm:inline text-2xl sm:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-yellow-300 to-orange-400 bg-clip-text text-transparent">
                 StudyTracker
               </span>
             </div>
@@ -603,14 +524,17 @@ function App() {
                 transition={{ delay: 0.55, duration: 0.45 }}
                 className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 pt-2"
               >
-                {!isFirstLogin && (
-                  <button
-                    onClick={handleStartSession}
-                    className="px-6 py-3 rounded-xl text-white font-semibold shadow-lg shadow-orange-500/30 bg-gradient-to-r from-yellow-400 via-orange-500 to-pink-500 hover:from-yellow-300 hover:via-orange-400 hover:to-pink-400 transition-all duration-300"
-                  >
-                    Start Focus
-                  </button>
-                )}
+                <button
+                  onClick={handleStartSession}
+                  disabled={webcamStarting}
+                  className={
+                    'px-6 py-3 rounded-xl text-white font-semibold shadow-lg shadow-orange-500/30 transition-all duration-300 ' +
+                    'bg-gradient-to-r from-yellow-400 via-orange-500 to-pink-500 hover:from-yellow-300 hover:via-orange-400 hover:to-pink-400 ' +
+                    'disabled:opacity-80 disabled:cursor-not-allowed'
+                  }
+                >
+                  {webcamStarting ? 'Starting Focus…' : 'Start Focus'}
+                </button>
                 <a
                   href="#stats-desktop"
                   className="px-6 py-3 rounded-xl font-semibold bg-white/10 text-white hover:bg-white/15 border border-white/15 backdrop-blur transition-colors"
@@ -621,18 +545,6 @@ function App() {
 
               
               {/* Feature Highlights */}
-  {/* How To Use Section at the bottom */}
-  <AnimatePresence>
-    {showHowTo && (
-      <motion.div
-        initial={{ opacity: 0, height: 0 }}
-        animate={{ opacity: 1, height: 'auto' }}
-        exit={{ opacity: 0, height: 0 }}
-      >
-        <HowToUse onGetStarted={handleGetStarted} />
-      </motion.div>
-    )}
-  </AnimatePresence>
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}

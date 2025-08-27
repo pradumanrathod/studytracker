@@ -157,8 +157,11 @@ function App() {
   // Warn user before page unload about potential data loss
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      // If there is an active or paused session, warn the user
-      if (timerState !== 'idle' || (currentSession && currentSession.duration > 0)) {
+      // Make sure we persist in-progress time
+      try {
+        timerService.flushProgress();
+      } catch {}
+      if (timerState === 'running' || currentSession?.isActive) {
         e.preventDefault();
         e.returnValue = '';
       }
@@ -169,15 +172,15 @@ function App() {
 
   // LocalStorage helpers for per-user stats persistence
   const statsStorageKey = (uid?: string | null) => `studytracker:stats:${uid ?? 'guest'}`;
-  const loadStatsFromStorage = (uid?: string | null) => {
+  const loadStatsFromStorage = (uid?: string | null): UserStats | null => {
     try {
       const raw = localStorage.getItem(statsStorageKey(uid));
-      if (raw) {
-        const parsed = JSON.parse(raw) as UserStats;
-        setStats(parsed);
-      }
+      if (!raw) return null;
+      const parsed = JSON.parse(raw) as UserStats;
+      return parsed;
     } catch (err) {
       console.warn('Failed to load stats from storage:', err);
+      return null;
     }
   };
   const saveStatsToStorage = (uid?: string | null, data?: UserStats) => {
@@ -217,34 +220,53 @@ function App() {
           const localComputed = timerService.getStats();
           console.log('[Stats] Remote fetched for', user.uid, remote);
           console.log('[Stats] Local computed from sessions', localComputed);
-          // If remote is essentially empty but local has data, prefer local
-          const remoteIsEmpty =
-            !remote.totalFocusTime &&
-            !remote.totalSessions &&
-            !remote.todayFocusTime &&
-            !remote.thisWeekFocusTime &&
-            !remote.thisMonthFocusTime &&
-            !remote.currentStreak &&
-            !remote.longestStreak &&
-            !remote.averageSessionLength;
-          const shouldUseLocal = remoteIsEmpty && (localComputed.totalFocusTime > 0 || localComputed.totalSessions > 0);
-          const merged = shouldUseLocal ? localComputed : remote;
+          // Merge by taking the maximum per metric so we don't regress due to stale remote
+          const merged: UserStats = {
+            totalFocusTime: Math.max(remote.totalFocusTime, localComputed.totalFocusTime),
+            totalSessions: Math.max(remote.totalSessions, localComputed.totalSessions),
+            currentStreak: Math.max(remote.currentStreak, localComputed.currentStreak),
+            longestStreak: Math.max(remote.longestStreak, localComputed.longestStreak),
+            averageSessionLength: Math.max(remote.averageSessionLength, localComputed.averageSessionLength),
+            todayFocusTime: Math.max(remote.todayFocusTime, localComputed.todayFocusTime),
+            thisWeekFocusTime: Math.max(remote.thisWeekFocusTime, localComputed.thisWeekFocusTime),
+            thisMonthFocusTime: Math.max(remote.thisMonthFocusTime, localComputed.thisMonthFocusTime),
+          };
 
           setStats(merged);
           // also cache locally and push to Firestore if we used local
           saveStatsToStorage(user.uid, merged);
-          if (shouldUseLocal) {
-            setUserStatsRemote(user.uid, merged).catch((err) => console.warn('Failed to push local stats to Firestore:', err));
-          }
-          console.log('[Stats] Using', shouldUseLocal ? 'LOCAL' : 'REMOTE', 'stats ->', merged);
+          setUserStatsRemote(user.uid, merged).catch((err) => console.warn('Failed to push merged stats to Firestore:', err));
+          console.log('[Stats] Using MERGED stats ->', merged);
           setStatsLoaded(true);
           return;
         } catch (err) {
           console.warn('Failed to load stats from Firestore, using local cache:', err);
         }
       }
-      // guest or remote failed: load from local cache
-      loadStatsFromStorage(user?.uid);
+      // guest or remote failed: compute from sessions and prefer it over cached if higher
+      const cached = loadStatsFromStorage(user?.uid) ?? {
+        totalFocusTime: 0,
+        totalSessions: 0,
+        currentStreak: 0,
+        longestStreak: 0,
+        averageSessionLength: 0,
+        todayFocusTime: 0,
+        thisWeekFocusTime: 0,
+        thisMonthFocusTime: 0,
+      };
+      const computed = timerService.getStats();
+      const mergedGuest: UserStats = {
+        totalFocusTime: Math.max(cached.totalFocusTime, computed.totalFocusTime),
+        totalSessions: Math.max(cached.totalSessions, computed.totalSessions),
+        currentStreak: Math.max(cached.currentStreak, computed.currentStreak),
+        longestStreak: Math.max(cached.longestStreak, computed.longestStreak),
+        averageSessionLength: Math.max(cached.averageSessionLength, computed.averageSessionLength),
+        todayFocusTime: Math.max(cached.todayFocusTime, computed.todayFocusTime),
+        thisWeekFocusTime: Math.max(cached.thisWeekFocusTime, computed.thisWeekFocusTime),
+        thisMonthFocusTime: Math.max(cached.thisMonthFocusTime, computed.thisMonthFocusTime),
+      };
+      setStats(mergedGuest);
+      saveStatsToStorage(user?.uid, mergedGuest);
       setStatsLoaded(true);
     };
     load();
@@ -338,6 +360,13 @@ function App() {
       }
     } catch (e) {
       console.warn('Failed to save session to Firestore:', e);
+    }
+    // Recompute stats immediately after ending a session and persist
+    const recomputed = timerService.getStats();
+    setStats(recomputed);
+    saveStatsToStorage(user?.uid, recomputed);
+    if (user?.uid) {
+      setUserStatsRemote(user.uid, recomputed).catch((err) => console.warn('Failed to save stats to Firestore:', err));
     }
   };
 

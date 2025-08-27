@@ -1,5 +1,5 @@
 import { StudySession, Break, TimerState, UserStats } from '../types';
-import { format, startOfDay, startOfWeek, startOfMonth, isSameDay, isSameWeek, isSameMonth } from 'date-fns';
+import { format, startOfDay, startOfWeek, startOfMonth, isSameDay, isSameWeek, isSameMonth, differenceInCalendarDays } from 'date-fns';
 
 class TimerService {
   private currentSession: StudySession | null = null;
@@ -11,10 +11,20 @@ class TimerService {
   // Track active time accounting for pauses
   private activeStartMs: number | null = null; // when session last started/resumed
   private accumulatedSeconds: number = 0; // total active seconds before current run
+  private lastPersistMs: number = 0; // throttle persistence while running
 
 
   constructor() {
     this.loadSessions();
+  }
+
+  // Persist current progress without changing state; use before page unload
+  flushProgress(): void {
+    if (this.currentSession && this.currentSession.isActive && this.activeStartMs) {
+      const delta = Math.floor((Date.now() - this.activeStartMs) / 1000);
+      this.currentSession.duration = this.accumulatedSeconds + delta;
+    }
+    this.saveSessions();
   }
 
 
@@ -38,6 +48,7 @@ class TimerService {
     // initialize active tracking
     this.accumulatedSeconds = 0;
     this.activeStartMs = Date.now();
+    this.lastPersistMs = Date.now();
     this.startTimer();
     this.updateCallbacks();
     this.saveSessions();
@@ -59,6 +70,9 @@ class TimerService {
     this.state = 'paused';
     this.stopTimer();
     this.updateCallbacks();
+    // Persist progress so reloads reflect up-to-date durations
+    this.saveSessions();
+    this.updateStats();
   }
 
   resumeSession(): void {
@@ -132,6 +146,13 @@ class TimerService {
         const runningSeconds = this.activeStartMs ? Math.floor((Date.now() - this.activeStartMs) / 1000) : 0;
         this.currentSession.duration = this.accumulatedSeconds + runningSeconds;
         this.updateCallbacks();
+        // Persist at most every 5 seconds to survive reloads mid-session
+        const now = Date.now();
+        if (now - this.lastPersistMs >= 5000) {
+          this.saveSessions();
+          this.updateStats();
+          this.lastPersistMs = now;
+        }
       }
     }, 1000);
   }
@@ -210,9 +231,6 @@ class TimerService {
 
   getStats(): UserStats {
     const now = new Date();
-    const today = startOfDay(now);
-    const thisWeek = startOfWeek(now);
-    const thisMonth = startOfMonth(now);
 
     // Only count sessions longer than 1 minute
     const validSessions = this.sessions.filter(session => session.duration >= 60);
@@ -220,17 +238,17 @@ class TimerService {
     const totalSessions = validSessions.length;
 
     const todaySessions = validSessions.filter(session => 
-      isSameDay(session.startTime, today)
+      isSameDay(session.startTime, now)
     );
     const todayFocusTime = todaySessions.reduce((total, session) => total + session.duration, 0);
 
     const thisWeekSessions = this.sessions.filter(session => 
-      isSameWeek(session.startTime, thisWeek)
+      isSameWeek(session.startTime, now)
     );
     const thisWeekFocusTime = thisWeekSessions.reduce((total, session) => total + session.duration, 0);
 
     const thisMonthSessions = this.sessions.filter(session => 
-      isSameMonth(session.startTime, thisMonth)
+      isSameMonth(session.startTime, now)
     );
     const thisMonthFocusTime = thisMonthSessions.reduce((total, session) => total + session.duration, 0);
 
@@ -252,40 +270,40 @@ class TimerService {
     };
   }
 
-  // Rolling 24-hour window streak logic (strict consecutive)
+  // Calendar-day based current streak: consecutive days up to today with any valid session (>=60s)
   private calculateCurrentStreak(): number {
     const validSessions = this.sessions.filter(s => s.duration >= 60);
     if (validSessions.length === 0) return 0;
-    // Sort by startTime ascending
-    const sorted = [...validSessions].sort((a, b) => a.startTime.getTime() - b.startTime.getTime());
-    let streak = 1;
-    for (let i = sorted.length - 1; i > 0; i--) {
-      const prev = sorted[i - 1].startTime.getTime();
-      const curr = sorted[i].startTime.getTime();
-      if (curr - prev <= 24 * 60 * 60 * 1000) {
-        streak++;
-      } else {
-        streak = 1;
-      }
+    const daysWithSessions = new Set<string>(
+      validSessions.map(s => format(s.startTime, 'yyyy-MM-dd'))
+    );
+    let streak = 0;
+    let cursor = new Date();
+    while (daysWithSessions.has(format(cursor, 'yyyy-MM-dd'))) {
+      streak++;
+      cursor.setDate(cursor.getDate() - 1);
     }
     return streak;
   }
 
-  // Rolling 24-hour window longest streak logic (strict consecutive)
+  // Calendar-day based longest streak over unique days with any valid session
   private calculateLongestStreak(): number {
     const validSessions = this.sessions.filter(s => s.duration >= 60);
     if (validSessions.length === 0) return 0;
-    // Sort by startTime ascending
-    const sorted = [...validSessions].sort((a, b) => a.startTime.getTime() - b.startTime.getTime());
+    const uniqueDays = Array.from(
+      new Set(validSessions.map(s => format(s.startTime, 'yyyy-MM-dd')))
+    )
+      .map(d => new Date(d))
+      .sort((a, b) => a.getTime() - b.getTime());
+
     let longest = 1;
     let streak = 1;
-    for (let i = 1; i < sorted.length; i++) {
-      const prev = sorted[i - 1].startTime.getTime();
-      const curr = sorted[i].startTime.getTime();
-      if (curr - prev <= 24 * 60 * 60 * 1000) {
+    for (let i = 1; i < uniqueDays.length; i++) {
+      const diff = differenceInCalendarDays(uniqueDays[i], uniqueDays[i - 1]);
+      if (diff === 1) {
         streak++;
         if (streak > longest) longest = streak;
-      } else {
+      } else if (diff > 1) {
         streak = 1;
       }
     }

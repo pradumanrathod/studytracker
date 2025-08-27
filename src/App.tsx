@@ -15,6 +15,7 @@ import {
   Sun,
   User as UserIcon
 } from 'lucide-react';
+import { Analytics } from '@vercel/analytics/react';
 import { timerService } from './services/timerService';
 import { getUserStats as getUserStatsRemote, setUserStats as setUserStatsRemote } from './services/statsService';
 import { listUserSessions, upsertUserSession } from './services/sessionsService';
@@ -894,6 +895,8 @@ function App() {
       <Reviews />
       <FAQ />
       <Footer />
+      {/* Vercel Analytics component */}
+      <Analytics />
     </div>
   );
 }

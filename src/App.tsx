@@ -30,6 +30,7 @@ import WebcamView from './components/WebcamView';
 import SettingsPanel from './components/SettingsPanel';
 import MilestonesPanel from './components/MilestonesPanel';
 import Footer from './components/Footer';
+import HowToUse from './components/HowToUse';
 import FAQ from './components/FAQ';
 import Reviews from './components/Reviews';
 import WaterTankTimer from './components/WaterTankTimer';
@@ -369,6 +370,7 @@ function App() {
     if (user?.uid) {
       setUserStatsRemote(user.uid, recomputed).catch((err) => console.warn('Failed to save stats to Firestore:', err));
     }
+
   };
 
   const handleToggleWebcam = async () => {
@@ -423,6 +425,23 @@ function App() {
 
     return (
     <div className={`min-h-screen transition-colors duration-300 bg-gradient-to-br from-indigo-950 via-gray-900 to-purple-950`}>
+      {/* Local styles for animated gradients & shimmer */}
+      <style>{`
+        @keyframes gradientShift {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        @keyframes glowPulse {
+          0%, 100% { opacity: .55; filter: drop-shadow(0 0 18px rgba(251,191,36,.25)); }
+          50% { opacity: .9; filter: drop-shadow(0 0 28px rgba(251,191,36,.45)); }
+        }
+        @keyframes floatSlow {
+          0% { transform: translateY(0px); }
+          50% { transform: translateY(-10px); }
+          100% { transform: translateY(0px); }
+        }
+      `}</style>
       {/* Header */}
       <header className={`sticky top-0 z-50 transition-colors duration-300 backdrop-blur supports-[backdrop-filter]:backdrop-blur bg-gray-900/70 border-b border-gray-800`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -454,6 +473,16 @@ function App() {
                 </span>
               </button>
 
+              {/* Achievements Nav */}
+              <button
+                onClick={() => navigate('/achievements')}
+                className="hidden sm:inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-white/10 text-white border border-white/15 hover:bg-white/15 transition-colors"
+                title="View today's achievement"
+              >
+                <Trophy className="h-4 w-4" />
+                <span className="text-sm font-medium">Achievements</span>
+              </button>
+
               {/* Theme toggle removed: dark mode only */}
 
               {/* User sign-in icon */}
@@ -478,6 +507,7 @@ function App() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-10 py-12 lg:py-16">
         {/* Welcome Section */}
+        {!webcamEnabled && (
         <div className="mb-10">
           <motion.div 
             initial={{ opacity: 0, y: 30 }}
@@ -485,6 +515,14 @@ function App() {
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="relative overflow-hidden rounded-3xl border border-white/10 shadow-2xl ring-1 ring-black/40"
           >
+            {/* Soft animated glow border */}
+            <div className="pointer-events-none absolute inset-0 rounded-3xl" aria-hidden>
+              <div className="absolute -inset-[2px] rounded-[24px] blur-md opacity-70"
+                style={{
+                  background: 'conic-gradient(from 90deg at 50% 50%, rgba(251,191,36,.25), rgba(251,113,133,.18), rgba(99,102,241,.22), rgba(251,191,36,.25))'
+                }}
+              />
+            </div>
             {/* Animated Background */}
             <div className={`absolute inset-0 ${
               isDarkMode 
@@ -492,18 +530,18 @@ function App() {
                 : 'bg-gradient-to-br from-pink-300 via-purple-400 to-indigo-500'
             }`}>
               {/* Aurora/spotlights */}
-              <div className="absolute -top-24 -left-16 w-72 h-72 bg-fuchsia-500/25 blur-[80px] rounded-full"></div>
-              <div className="absolute -bottom-20 -right-16 w-80 h-80 bg-sky-500/25 blur-[90px] rounded-full"></div>
-              <div className="absolute top-1/3 left-1/3 w-64 h-64 bg-emerald-400/10 blur-[70px] rounded-full"></div>
+              <div className="absolute -top-24 -left-16 w-72 h-72 bg-fuchsia-500/25 blur-[80px] rounded-full animate-pulse"></div>
+              <div className="absolute -bottom-20 -right-16 w-80 h-80 bg-sky-500/25 blur-[90px] rounded-full animate-pulse"></div>
+              <div className="absolute top-1/3 left-1/3 w-64 h-64 bg-emerald-400/10 blur-[70px] rounded-full" style={{ animation: 'floatSlow 7s ease-in-out infinite' }}></div>
               {/* Subtle grid */}
               <div className="absolute inset-0 opacity-20 [mask-image:linear-gradient(to_bottom,white,transparent)] pointer-events-none bg-[linear-gradient(to_right,rgba(255,255,255,0.15)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.15)_1px,transparent_1px)] bg-[size:22px_22px]"></div>
               {/* Noise overlay */}
-              <div className="absolute inset-0 opacity-[0.08] mix-blend-overlay pointer-events-none" style={{ backgroundImage: 'url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><filter id=\'n\'><feTurbulence type=\'fractalNoise\' baseFrequency=\'0.8\' numOctaves=\'2\' stitchTiles=\'stitch\'/></filter><rect width=\'100%\' height=\'100%\' filter=\'url(%23n)\' opacity=\'0.6\'/></svg>\')' }}></div>
+              <div className="absolute inset-0 opacity-[0.08] mix-blend-overlay pointer-events-none" style={{ backgroundImage: 'url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><filter id=\'n\'><feTurbulence type=\'fractalNoise\' baseFrequency=\'0.8\' numOctaves=\'2\' stitchTiles=\'stitch\'/></filter><rect width=\'100%\' height=\'100%\' filter=\'url(%23n)\' opacity=\'0.6\'/></svg>")' }}></div>
               {/* Floating sparkles */}
-              <div className="absolute top-4 left-4 w-2 h-2 bg-white/30 rounded-full animate-pulse"></div>
-              <div className="absolute top-8 right-8 w-3 h-3 bg-white/20 rounded-full animate-bounce-slow"></div>
-              <div className="absolute bottom-6 left-8 w-1 h-1 bg-white/40 rounded-full animate-pulse-slow"></div>
-              <div className="absolute bottom-8 right-4 w-2 h-2 bg-white/25 rounded-full animate-bounce"></div>
+              <div className="absolute top-4 left-6 w-2 h-2 bg-white/30 rounded-full animate-pulse" />
+              <div className="absolute top-10 right-8 w-3 h-3 bg-white/20 rounded-full animate-bounce" />
+              <div className="absolute bottom-8 left-10 w-2 h-2 bg-white/25 rounded-full" style={{ animation: 'floatSlow 6s ease-in-out infinite' }} />
+              <div className="absolute bottom-10 right-6 w-1.5 h-1.5 bg-white/30 rounded-full animate-ping" />
             </div>
             
             {/* Content */}
@@ -514,15 +552,19 @@ function App() {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.2, duration: 0.6 }}
               >
-                <h2 className="text-4xl md:text-6xl font-black text-white mb-3 tracking-tight drop-shadow-[0_4px_20px_rgba(0,0,0,0.45)]">
-                  Welcome to{' '}
-                  <span className="relative inline-block bg-gradient-to-r from-yellow-300 via-orange-400 to-pink-400 bg-clip-text text-transparent">
+                <h2 className="text-4xl md:text-6xl font-black mb-3 tracking-tight drop-shadow-[0_4px_20px_rgba(0,0,0,0.45)]">
+                  <span className="text-white/90">Welcome to</span>{' '}
+                  <span
+                    className="relative inline-block bg-clip-text text-transparent"
+                    style={{
+                      backgroundImage: 'linear-gradient(90deg, #fde68a, #fb923c, #f472b6, #a78bfa)',
+                      backgroundSize: '300% 100%',
+                      animation: 'gradientShift 6s ease-in-out infinite'
+                    }}
+                  >
                     StudyTracker
-                    {/* underline glow */}
-                    <span className="absolute -bottom-1 left-0 right-0 h-[6px] bg-gradient-to-r from-yellow-300/50 via-orange-400/50 to-pink-400/50 blur rounded-full"></span>
                   </span>
                 </h2>
-                <div className="w-28 h-1.5 bg-gradient-to-r from-yellow-300 via-orange-400 to-pink-400 mx-auto rounded-full shadow-[0_0_20px_rgba(251,191,36,0.6)]"></div>
               </motion.div>
               
               {/* Subtitle - concise on mobile, detailed on desktop */}
@@ -566,10 +608,15 @@ function App() {
                   {webcamStarting ? 'Starting Focus…' : 'Start Focus'}
                 </button>
                 <a
-                  href="#stats-desktop"
+                  href="#how-to-use"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    const el = document.getElementById('how-to-use');
+                    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }}
                   className="px-6 py-3 rounded-xl font-semibold bg-white/10 text-white hover:bg-white/15 border border-white/15 backdrop-blur transition-colors"
                 >
-                  Learn More
+                  Steps to use
                 </a>
               </motion.div>
 
@@ -597,6 +644,7 @@ function App() {
             </div>
           </motion.div>
         </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 lg:gap-12 xl:gap-16">
           {/* Webcam + Away Alert (mobile first) */}
@@ -891,6 +939,9 @@ function App() {
           )}
         </div>
       </section>
+
+      {/* How To Use Section (moved above Reviews) */}
+      <HowToUse onStartFocus={handleStartSession} isStarting={webcamStarting} />
 
       <Reviews />
       <FAQ />

@@ -6,51 +6,58 @@ type Review = {
   role?: string;
   rating: number; // 0-5
   text: string;
-  avatar?: string; // optional url
+  country?: string; // ISO 3166-1 alpha-2 (e.g., 'US')
 };
 
 const reviews: Review[] = [
   {
-    name: 'Aarav Sharma',
-    role: 'College Student',
+    name: 'Emily Carter',
+    role: 'Medical Student, USA',
     rating: 5,
     text:
-      'StudyTracker completely changed how I focus. Auto-pause when I leave and clear stats at the end of the day – chef\'s kiss.',
+      "I didn’t realize how much time I lost between sessions. The auto-pause when I leave my desk is a lifesaver. I’m up ~10 focused hours/week now.",
+    country: 'US',
   },
-  {
-    name: 'Isha Verma',
-    role: 'JEE Aspirant',
-    rating: 5,
-    text:
-      'The presence detection is surprisingly accurate and everything runs in the browser. Privacy + productivity in one place.',
-  },
-  {
-    name: 'Rohan Patel',
-    role: 'Developer',
-    rating: 4,
-    text:
-      'Beautiful UI and simple controls. Streaks keep me motivated. Would love a native export option next!',
-  },
-  {
-    name: 'Sofía Martínez',
-    role: 'Product Manager, Spain',
-    rating: 5,
-    text:
-      'Logged 142 hours in 6 weeks using StudyTracker. My daily distractions dropped by 35% and weekly deep-work blocks doubled.',
-  },
+
   {
     name: 'Kenji Tanaka',
     role: 'Software Engineer, Japan',
     rating: 5,
     text:
-      'My average focused time increased by 52 minutes/day and I hit a 14-day streak. Auto-pause/resume works 99% of the time.',
+      'Average focus up by ~50 minutes/day. Hit a 14‑day streak without thinking about the timer. Auto resume feels almost magical.',
+    country: 'JP',
   },
   {
-    name: 'Léa Dubois',
-    role: 'PhD Candidate, France',
+    name: 'Arjun Mehta',
+    role: 'IIT Aspirant, India',
+    rating: 5,
+    text:
+      'My mock test prep finally feels structured. I do 3 deep-work blocks daily now and the weekly graph keeps me honest.',
+    country: 'IN',
+  },
+  {
+    name: 'Aarav Sharma',
+    role: 'College Student, India',
+    rating: 5,
+    text:
+      "Switched from manual timers. StudyTracker just… handles it. End‑of‑day stats are oddly satisfying.",
+    country: 'IN',
+  },
+  {
+    name: 'Chris E.',
+    role: 'Developer, New York',
     rating: 4,
     text:
-      'Thesis writing time up 28% in the first month. The session stats helped me plan 3 longer focus blocks per day reliably.',
+      'Beautiful UI and simple controls. Streaks keep me motivated. Would love a native export option next!',
+    country: 'US',
+  },
+  {
+    name: 'Sofía Martínez',
+    role: 'Data Analyst Intern, Spain',
+    rating: 5,
+    text:
+      'Logged 142 hours in 6 weeks. My daily distractions dropped massively and weekly deep‑work blocks doubled.',
+    country: 'ES',
   },
 ];
 
@@ -65,30 +72,37 @@ const Stars: React.FC<{ value: number }> = ({ value }) => (
   </div>
 );
 
-const Avatar: React.FC<{ name: string; src?: string }> = ({ name, src }) => {
-  const initials = name
-    .split(' ')
-    .map((n) => n[0])
-    .slice(0, 2)
-    .join('')
-    .toUpperCase();
-  return (
-    <div className="relative h-10 w-10 shrink-0 rounded-full bg-gray-800 flex items-center justify-center text-sm font-semibold text-white overflow-hidden">
-      {src ? (
-        <img src={src} alt={`${name} avatar`} className="h-full w-full object-cover" />
-      ) : (
-        <span>{initials}</span>
-      )}
-    </div>
-  );
+// Avatar removed per request (no user photos)
+
+// Convert ISO country code to emoji flag
+const flagFromISO = (iso?: string) => {
+  if (!iso) return '';
+  const code = iso.toUpperCase();
+  if (code.length !== 2) return '';
+  const OFFSET = 127397; // regional indicator offset
+  return String.fromCodePoint(code.charCodeAt(0) + OFFSET, code.charCodeAt(1) + OFFSET);
+};
+
+// Shuffle helper (Fisher–Yates)
+const shuffle = <T,>(arr: T[]): T[] => {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
 };
 
 const Reviews: React.FC = () => {
+  const randomized = React.useMemo(() => shuffle(reviews), []);
   return (
     <section aria-labelledby="reviews-title" className="mt-12 sm:mt-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-6 sm:mb-8">
+          <div className="inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-300 ring-1 ring-emerald-500/30">
+            Trusted by thousands of users worldwide
+          </div>
           <h2
             id="reviews-title"
             className="text-2xl sm:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-violet-400 to-indigo-500 bg-clip-text text-transparent"
@@ -96,13 +110,13 @@ const Reviews: React.FC = () => {
             What users are saying
           </h2>
           <p className="mt-2 text-sm sm:text-base text-gray-300">
-            Real stories from people using StudyTracker to stay focused
+            Real stories from the US, UK, Australia, Japan, India—and beyond.
           </p>
         </div>
 
         {/* Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-          {reviews.map((r, idx) => (
+          {randomized.map((r, idx) => (
             <article
               key={idx}
               className="group relative rounded-2xl border bg-gray-900/40 border-gray-700 shadow-sm overflow-hidden"
@@ -111,13 +125,14 @@ const Reviews: React.FC = () => {
               <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-yellow-400 via-orange-500 to-pink-500 opacity-80" />
 
               <div className="p-5 sm:p-6">
-                <div className="flex items-start gap-3">
-                  <Avatar name={r.name} />
+                <div className="flex items-start">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
                       <h3 className="truncate text-base font-semibold text-white">{r.name}</h3>
-                      {r.role && (
-                        <span className="truncate text-xs text-gray-400">• {r.role}</span>
+                      {(r.role || r.country) && (
+                        <span className="truncate text-xs text-gray-400">
+                          • {r.role} {r.country ? ` ${flagFromISO(r.country)}` : ''}
+                        </span>
                       )}
                     </div>
                     <Stars value={r.rating} />

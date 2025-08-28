@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
+import AchievementsPage from './components/AchievementsPage';
 
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import LoginPage from './components/LoginPage';
@@ -18,6 +19,7 @@ root.render(
         <Route path="/login" element={<LoginPage />} />
         <Route path="/terms" element={<TermsOfService />} />
         <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/achievements" element={<AchievementsPage />} />
         <Route path="/*" element={<App />} />
       </Routes>
     </BrowserRouter>

@@ -474,6 +474,15 @@ function App() {
               </button>
 
               {/* Achievements Nav */}
+              {/* Mobile: icon-only */}
+              <button
+                onClick={() => navigate('/achievements')}
+                className="sm:hidden p-2 rounded-lg text-white hover:bg-white/15 transition-colors"
+                title="Achievements"
+              >
+                <Trophy className="h-4 w-4" />
+              </button>
+              {/* Tablet/Desktop: label + icon */}
               <button
                 onClick={() => navigate('/achievements')}
                 className="hidden sm:inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-white/10 text-white border border-white/15 hover:bg-white/15 transition-colors"
@@ -600,7 +609,7 @@ function App() {
                   onClick={handleStartSession}
                   disabled={webcamStarting}
                   className={
-                    'px-6 py-3 rounded-xl text-white font-semibold shadow-lg shadow-orange-500/30 transition-all duration-300 ' +
+                    'px-5 py-2.5 sm:px-6 sm:py-3 rounded-xl text-white font-semibold shadow-lg shadow-orange-500/30 transition-all duration-300 ' +
                     'bg-gradient-to-r from-yellow-400 via-orange-500 to-pink-500 hover:from-yellow-300 hover:via-orange-400 hover:to-pink-400 ' +
                     'disabled:opacity-80 disabled:cursor-not-allowed'
                   }
@@ -614,7 +623,7 @@ function App() {
                     const el = document.getElementById('how-to-use');
                     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
                   }}
-                  className="px-6 py-3 rounded-xl font-semibold bg-white/10 text-white hover:bg-white/15 border border-white/15 backdrop-blur transition-colors"
+                  className="px-5 py-2.5 sm:px-6 sm:py-3 rounded-xl font-semibold bg-white/10 text-white hover:bg-white/15 border border-white/15 backdrop-blur transition-colors"
                 >
                   Steps to use
                 </a>

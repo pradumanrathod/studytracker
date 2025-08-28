@@ -156,23 +156,23 @@ const AchievementsPage: React.FC = () => {
   // Show login CTA for guests
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-gray-900 to-purple-950 py-10">
+      <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-gray-900 to-purple-950 py-8 sm:py-10">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-start mb-6">
             <button onClick={() => navigate('/')} className="inline-flex items-center gap-2 text-gray-300 hover:text-white">
               <Home className="h-5 w-5" />
             </button>
           </div>
-          <div className="relative overflow-hidden rounded-3xl border border-white/10 ring-1 ring-black/40 shadow-2xl p-8 sm:p-12 text-center bg-gradient-to-br from-gray-900/60 to-gray-900/20">
+          <div className="relative overflow-hidden rounded-3xl border border-white/10 ring-1 ring-black/40 shadow-2xl p-6 sm:p-12 text-center bg-gradient-to-br from-gray-900/60 to-gray-900/20">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-yellow-500/10 text-yellow-300 ring-1 ring-yellow-500/30">
               <Sparkles className="h-4 w-4" /> Achievements
             </div>
-            <h1 className="mt-4 text-3xl sm:text-4xl font-black text-white">Login to see today's achievement</h1>
-            <p className="mt-3 text-gray-300 max-w-xl mx-auto">Sign in to sync your focus stats, unlock milestones, and share your daily achievement card.</p>
-            <div className="mt-8 flex items-center justify-center">
+            <h1 className="mt-3 text-2xl sm:text-4xl font-black text-white">Login to see today's achievement</h1>
+            <p className="mt-2 text-gray-300 max-w-xl mx-auto text-sm">Sign in to sync your focus stats, unlock milestones, and share your daily achievement card.</p>
+            <div className="mt-6 sm:mt-8 flex items-center justify-center">
               <button
                 onClick={() => navigate('/login')}
-                className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-yellow-400 via-orange-500 to-pink-500 text-white font-semibold shadow-lg shadow-orange-500/30"
+                className="inline-flex items-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl bg-gradient-to-r from-yellow-400 via-orange-500 to-pink-500 text-white font-semibold shadow-lg shadow-orange-500/30"
               >
                 Go to Login
               </button>
@@ -184,7 +184,7 @@ const AchievementsPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-gray-900 to-purple-950 py-10">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-gray-900 to-purple-950 py-8 sm:py-10">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-start mb-6">
           <button onClick={() => navigate('/')} className="inline-flex items-center gap-2 text-gray-300 hover:text-white">
@@ -193,7 +193,7 @@ const AchievementsPage: React.FC = () => {
         </div>
 
         {/* Hero Card to screenshot */}
-        <div ref={cardRef} className="relative overflow-hidden rounded-3xl border border-white/10 ring-1 ring-black/40 shadow-2xl p-8 sm:p-12 text-center bg-gradient-to-br from-gray-900/60 to-gray-900/20">
+        <div ref={cardRef} className="relative overflow-hidden rounded-3xl border border-white/10 ring-1 ring-black/40 shadow-2xl p-6 sm:p-12 text-center bg-gradient-to-br from-gray-900/60 to-gray-900/20">
           {!exporting && (
             <div className="absolute inset-0 pointer-events-none">
               <div className="absolute -top-24 -left-16 w-72 h-72 bg-fuchsia-500/25 blur-[80px] rounded-full" />
@@ -206,20 +206,20 @@ const AchievementsPage: React.FC = () => {
             <Sparkles className="h-4 w-4" /> Daily Achievement
           </div>
 
-          <h1 className="mt-4 text-4xl sm:text-5xl font-black text-white">
+          <h1 className="mt-3 text-3xl sm:text-5xl font-black text-white">
             You studied
             <span className="block mt-2 text-white">
               {todayMins} minutes today
             </span>
           </h1>
-          <p className="mt-3 text-gray-300">That's {Math.floor(todayMins/60)}h {todayMins%60}m of focused work. Be proud of your commitment.</p>
+          <p className="mt-2 sm:mt-3 text-gray-300 text-sm">That's {Math.floor(todayMins/60)}h {todayMins%60}m of focused work. Be proud of your commitment.</p>
 
-          <div className={`mt-8 mx-auto max-w-md rounded-2xl border border-white/10 p-5 bg-gradient-to-r ${tier.color} text-gray-900`}>
+          <div className={`mt-6 sm:mt-8 mx-auto max-w-md rounded-2xl border border-white/10 p-4 sm:p-5 bg-gradient-to-r ${tier.color} text-gray-900`}>
             <div className="flex items-center justify-center gap-3">
               <span className="text-3xl" aria-hidden>{tier.emoji}</span>
               <div>
-                <div className="text-xl sm:text-2xl font-extrabold tracking-wide">{tier.title}</div>
-                <div className="text-sm opacity-90">{tier.sub}</div>
+                <div className="text-lg sm:text-2xl font-extrabold tracking-wide">{tier.title}</div>
+                <div className="text-xs sm:text-sm opacity-90">{tier.sub}</div>
               </div>
             </div>
           </div>
@@ -241,7 +241,7 @@ const AchievementsPage: React.FC = () => {
           </div>
 
           {/* Badges */}
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
+          <div className="mt-8 sm:mt-10 flex flex-wrap items-center justify-center gap-2 sm:gap-3">
             <span className="inline-flex h-9 items-center gap-2 px-4 rounded-full bg-white/10 text-white border border-white/10 text-sm font-medium"><Trophy className="h-4 w-4"/> Daily Winner</span>
             <span className="inline-flex h-9 items-center gap-2 px-4 rounded-full bg-white/10 text-white border border-white/10 text-sm font-medium"><Crown className="h-4 w-4"/> Consistency</span>
             <span className="inline-flex h-9 items-center gap-2 px-4 rounded-full bg-white/10 text-white border border-white/10 text-sm font-medium"><Star className="h-4 w-4"/> Focus Ninja</span>
@@ -249,16 +249,16 @@ const AchievementsPage: React.FC = () => {
         </div>
 
         {/* CTA row */}
-        <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
-          <button onClick={handleShare} disabled={busy} className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-yellow-400 via-orange-500 to-pink-500 text-white font-semibold shadow-lg shadow-orange-500/30 disabled:opacity-70">
+        <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
+          <button onClick={handleShare} disabled={busy} className="inline-flex items-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl bg-gradient-to-r from-yellow-400 via-orange-500 to-pink-500 text-white font-semibold shadow-lg shadow-orange-500/30 disabled:opacity-70">
             <Share2 className="h-5 w-5" /> Share achievement
           </button>
-          <button onClick={handleDownloadImage} disabled={busy} className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-white/10 text-white border border-white/15 hover:bg-white/15">
+          <button onClick={handleDownloadImage} disabled={busy} className="inline-flex items-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl bg-white/10 text-white border border-white/15 hover:bg-white/15">
             <Download className="h-5 w-5" /> Download image
           </button>
         </div>
 
-        <p className="mt-4 text-center text-gray-400 text-sm">Tip: If sharing doesn't open, we'll download the image instead.</p>
+        <p className="mt-3 sm:mt-4 text-center text-gray-400 text-xs sm:text-sm">Tip: If sharing doesn't open, we'll download the image instead.</p>
       </div>
     </div>
   );

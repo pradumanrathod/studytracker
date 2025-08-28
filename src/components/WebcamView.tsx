@@ -55,32 +55,13 @@ const WebcamView: React.FC<WebcamViewProps> = ({
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Face Detection</h3>
-        <div className="flex items-center gap-3">
-          <div className={`flex items-center space-x-2 ${getStatusColor()}`}>
-            {getStatusIcon()}
-            <span className="text-sm font-medium">{getStatusText()}</span>
-          </div>
-          <button
-            onClick={onToggleWebcam}
-            disabled={!!isStarting}
-            className={`px-3 py-1.5 rounded-md text-sm font-medium flex items-center gap-2 transition-colors
-              ${webcamEnabled ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-success-600 text-white hover:bg-success-700'}
-              ${isStarting ? 'opacity-70 cursor-not-allowed' : ''}`}
-          >
-            <Camera className="h-4 w-4" />
-            {webcamEnabled ? 'Stop Webcam' : (isStarting ? 'Starting…' : 'Start Webcam')}
-          </button>
-        </div>
-      </div>
+    <div className="space-y-3 sm:space-y-4">
 
       {/* Webcam Container */}
       <div className="relative bg-gray-900 rounded-lg overflow-hidden">
         <video
           ref={videoRef}
-          className="w-full h-64 sm:h-80 md:h-96 lg:h-[28rem] object-cover transform scale-x-[-1]"
+          className="w-full h-52 sm:h-72 md:h-96 lg:h-[28rem] object-cover transform scale-x-[-1]"
           autoPlay
           muted
           playsInline
@@ -105,91 +86,34 @@ const WebcamView: React.FC<WebcamViewProps> = ({
           </div>
         )}
 
-        {/* Detection Overlay */}
-        {faceDetectionState.isDetecting && (
-          <div className="absolute top-4 right-4">
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              className={`flex items-center space-x-2 px-3 py-1 rounded-full text-sm font-medium ${
-                faceDetectionState.faceDetected
-                  ? 'bg-success-100 text-success-800 dark:bg-success-900/40 dark:text-success-200'
-                  : 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200'
-              }`}
-            >
-              {faceDetectionState.faceDetected ? (
-                <Eye className="h-4 w-4" />
-              ) : (
-                <EyeOff className="h-4 w-4" />
-              )}
-              <span>
-                {faceDetectionState.faceDetected
-                  ? `${Math.round(faceDetectionState.confidence * 100)}%`
-                  : 'Away'}
-              </span>
-            </motion.div>
-          </div>
-        )}
+        {/* Detection Overlay removed as requested */}
 
         {/* Away Warning */}
       </div>
 
-      {/* Detection Info */}
-      <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 sm:p-4 space-y-3">
-        {webcamError && (
-          <div className="flex items-start gap-2 p-2 rounded border border-red-200 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-900/30 dark:text-red-200 text-sm">
-            <AlertCircle className="h-4 w-4 mt-0.5" />
-            <span>{webcamError}</span>
-          </div>
-        )}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-sm">
-          <div>
-            <span className="text-gray-600 dark:text-gray-300">Detection Status:</span>
-            <div className="font-medium text-gray-900 dark:text-gray-100">
-              {faceDetectionState.isDetecting ? 'Active' : 'Inactive'}
-            </div>
-          </div>
-          
-          <div>
-            <span className="text-gray-600 dark:text-gray-300">Confidence:</span>
-            <div className="font-medium text-gray-900 dark:text-gray-100">
-              {faceDetectionState.isDetecting
-                ? `${Math.round(faceDetectionState.confidence * 100)}%`
-                : 'N/A'}
-            </div>
-          </div>
-          
-          <div>
-            <span className="text-gray-600 dark:text-gray-300">Last Detection:</span>
-            <div className="font-medium text-gray-900 dark:text-gray-100">
-              {faceDetectionState.isDetecting
-                ? faceDetectionState.lastDetection.toLocaleTimeString()
-                : 'N/A'}
-            </div>
-          </div>
-          
-          <div>
-            <span className="text-gray-600 dark:text-gray-300">Face Present:</span>
-            <div className={`font-medium ${
-              faceDetectionState.faceDetected
-                ? 'text-success-600 dark:text-success-400'
-                : 'text-red-600 dark:text-red-400'
-            }`}>
-              {faceDetectionState.faceDetected ? 'Yes' : 'No'}
-            </div>
-          </div>
-        </div>
+      {/* Centered Start/Stop button below video */}
+      <div className="text-center">
+        <button
+          onClick={onToggleWebcam}
+          disabled={!!isStarting}
+          className={`px-3 py-2 sm:px-4 sm:py-2 rounded-md text-sm sm:text-base font-medium inline-flex items-center gap-2 transition-colors
+            ${webcamEnabled ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-success-600 text-white hover:bg-success-700'}
+            ${isStarting ? 'opacity-70 cursor-not-allowed' : ''}`}
+        >
+          <Camera className="h-4 w-4" />
+          <span>{webcamEnabled ? 'Stop Webcam' : (isStarting ? 'Starting…' : 'Start Webcam')}</span>
+        </button>
+      </div>
 
-        {/* Instructions */}
-        <div className="text-xs text-gray-500 dark:text-gray-300 bg-white dark:bg-gray-800 rounded p-3 border dark:border-gray-700">
-          <p className="font-medium mb-1">How it works:</p>
-          <ul className="space-y-1">
-            <li>• Position yourself in front of the camera</li>
-            <li>• The app will automatically detect when you're present</li>
-            <li>• Sessions can auto-start when you're detected</li>
-            <li>• Sessions pause when you leave your desk</li>
-          </ul>
-        </div>
+      {/* Rules at the bottom (all screens) */}
+      <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 sm:p-4">
+        <p className="font-medium text-xs sm:text-sm mb-1">Rules</p>
+        <ul className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 space-y-1">
+          <li>• Keep your face in view for accurate tracking</li>
+          <li>• Ensure decent lighting and sit facing the camera</li>
+          <li>• Start/Stop the webcam anytime using the button above</li>
+          <li>• Click End Session to save your progress</li>
+        </ul>
       </div>
     </div>
   );

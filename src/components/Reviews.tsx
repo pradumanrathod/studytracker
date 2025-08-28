@@ -100,7 +100,7 @@ const Reviews: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-6 sm:mb-8">
-          <div className="inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-300 ring-1 ring-emerald-500/30">
+          <div className="hidden sm:inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-300 ring-1 ring-emerald-500/30">
             Trusted by thousands of users worldwide
           </div>
           <h2
@@ -114,17 +114,51 @@ const Reviews: React.FC = () => {
           </p>
         </div>
 
-        {/* Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        {/* Mobile: swipeable carousel */}
+        <div className="block sm:hidden">
+          <div className="-mx-4 px-4 overflow-x-auto">
+            <div className="flex gap-3 snap-x snap-mandatory">
+              {randomized.map((r, idx) => (
+                <article
+                  key={idx}
+                  className="group relative min-w-[85%] snap-start rounded-2xl border bg-gray-900/40 border-gray-700 shadow-sm overflow-hidden"
+                >
+                  <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-yellow-400 via-orange-500 to-pink-500 opacity-80" />
+                  <div className="p-5">
+                    <div className="flex items-start">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <h3 className="truncate text-base font-semibold text-white">{r.name}</h3>
+                          {(r.role || r.country) && (
+                            <span className="truncate text-xs text-gray-400">
+                              • {r.role} {r.country ? ` ${flagFromISO(r.country)}` : ''}
+                            </span>
+                          )}
+                        </div>
+                        <Stars value={r.rating} />
+                      </div>
+                      <Quote className="ml-auto h-5 w-5 text-gray-600" />
+                    </div>
+                    <p className="mt-3 text-sm leading-relaxed text-gray-300">{r.text}</p>
+                  </div>
+                  <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="absolute -inset-1 bg-gradient-to-br from-yellow-500/10 to-orange-500/10 blur-2xl" />
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Desktop/tablet grid */}
+        <div className="hidden sm:grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {randomized.map((r, idx) => (
             <article
               key={idx}
               className="group relative rounded-2xl border bg-gray-900/40 border-gray-700 shadow-sm overflow-hidden"
             >
-              {/* Accent gradient border top */}
               <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-yellow-400 via-orange-500 to-pink-500 opacity-80" />
-
-              <div className="p-5 sm:p-6">
+              <div className="p-6">
                 <div className="flex items-start">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
@@ -139,13 +173,8 @@ const Reviews: React.FC = () => {
                   </div>
                   <Quote className="ml-auto h-5 w-5 text-gray-600" />
                 </div>
-
-                <p className="mt-4 text-sm leading-relaxed text-gray-300">
-                  {r.text}
-                </p>
+                <p className="mt-4 text-sm leading-relaxed text-gray-300">{r.text}</p>
               </div>
-
-              {/* Subtle glow on hover in light mode; toned down for dark */}
               <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity">
                 <div className="absolute -inset-1 bg-gradient-to-br from-yellow-500/10 to-orange-500/10 blur-2xl" />
               </div>

@@ -1,7 +1,9 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Crown, Share2, Download, Trophy, Sparkles, Star, Home } from 'lucide-react';
 import { timerService } from '../services/timerService';
+import { auth } from '../services/firebaseAuth';
+import { onAuthStateChanged, User } from 'firebase/auth';
 
 // Compliment tiers based on minutes studied today
 function getTier(minutes: number) {
@@ -17,10 +19,17 @@ const AchievementsPage: React.FC = () => {
   const navigate = useNavigate();
   const [busy, setBusy] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
   const stats = useMemo(() => timerService.getStats(), []);
   const todayMins = Math.floor((stats?.todayFocusTime ?? 0) / 60);
   const tier = getTier(todayMins);
   const cardRef = useRef<HTMLDivElement>(null);
+
+  // Subscribe to auth state
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (u) => setUser(u));
+    return () => unsub();
+  }, []);
 
   // Capture helper: prefers html-to-image, falls back to html2canvas
   const captureCardToBlob = async (): Promise<Blob | null> => {
@@ -143,6 +152,36 @@ const AchievementsPage: React.FC = () => {
       setBusy(false);
     }
   };
+
+  // Show login CTA for guests
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-gray-900 to-purple-950 py-10">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-start mb-6">
+            <button onClick={() => navigate('/')} className="inline-flex items-center gap-2 text-gray-300 hover:text-white">
+              <Home className="h-5 w-5" />
+            </button>
+          </div>
+          <div className="relative overflow-hidden rounded-3xl border border-white/10 ring-1 ring-black/40 shadow-2xl p-8 sm:p-12 text-center bg-gradient-to-br from-gray-900/60 to-gray-900/20">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-yellow-500/10 text-yellow-300 ring-1 ring-yellow-500/30">
+              <Sparkles className="h-4 w-4" /> Achievements
+            </div>
+            <h1 className="mt-4 text-3xl sm:text-4xl font-black text-white">Login to see today's achievement</h1>
+            <p className="mt-3 text-gray-300 max-w-xl mx-auto">Sign in to sync your focus stats, unlock milestones, and share your daily achievement card.</p>
+            <div className="mt-8 flex items-center justify-center">
+              <button
+                onClick={() => navigate('/login')}
+                className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-yellow-400 via-orange-500 to-pink-500 text-white font-semibold shadow-lg shadow-orange-500/30"
+              >
+                Go to Login
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-gray-900 to-purple-950 py-10">

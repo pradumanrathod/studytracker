@@ -34,8 +34,10 @@ const NotificationsSettings: React.FC = () => {
       await saveReminderSettings(uid, settings, token);
       setStatus('Reminders enabled. You will get a daily push.');
       setEnabled(true);
-    } catch (e) {
-      setStatus('Failed to save settings.');
+    } catch (e: any) {
+      console.error('[Notifications] enable failed', e);
+      const msg = e?.message || e?.code || String(e);
+      setStatus(`Failed to save settings: ${msg}`);
     } finally {
       setSaving(false);
     }
@@ -48,8 +50,10 @@ const NotificationsSettings: React.FC = () => {
       await saveReminderSettings(uid, { enabled: false, timeHHMM: time, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone });
       setEnabled(false);
       setStatus('Reminders disabled.');
-    } catch {
-      setStatus('Failed to disable reminders.');
+    } catch (e: any) {
+      console.error('[Notifications] disable failed', e);
+      const msg = e?.message || e?.code || String(e);
+      setStatus(`Failed to disable: ${msg}`);
     } finally {
       setSaving(false);
     }

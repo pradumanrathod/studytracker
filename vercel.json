@@ -1,0 +1,13 @@
+{
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "www.studytracker.online" }],
+      "destination": "https://studytracker.online/:path*",
+      "permanent": true
+    }
+  ],
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/" }
+  ]
+}

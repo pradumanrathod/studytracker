@@ -19,7 +19,7 @@ messaging.onBackgroundMessage((payload) => {
   const options = {
     body: payload.notification?.body || 'Time to study! Start your session now.',
     icon: '/models/android-chrome-512x512.png',
-    badge: '/favicon-96x96.png',
+    badge: '/models/android-chrome-512x512.png',
     data: payload.data || {},
   };
   self.registration.showNotification(title, options);

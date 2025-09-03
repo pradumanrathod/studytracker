@@ -2,9 +2,21 @@
   "redirects": [
     {
       "source": "/:path*",
-      "has": [{ "type": "host", "value": "www.studytracker.online" }],
+      "has": [
+        { "type": "host", "value": "www.studytracker.online" },
+        { "type": "header", "key": "accept", "value": ".*text/html.*" }
+      ],
       "destination": "https://studytracker.online/:path*",
       "permanent": true
+    }
+  ],
+  "headers": [
+    {
+      "source": "/manifest.json",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET, OPTIONS" }
+      ]
     }
   ],
   "rewrites": [
